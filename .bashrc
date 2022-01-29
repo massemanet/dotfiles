@@ -1,8 +1,6 @@
 #!/bin/bash
 # -*- mode: shell-script -*-
 # ~/.bashrc: executed by bash(1) for non-login shells.
-#
-# debian style
 
 # make scp work by checking for a tty
 [ -t 0 ] || return
@@ -15,35 +13,37 @@ unalias -a
 shopt -s checkwinsize
 
 # pretty colors
-eval "$(dircolors)"
-
-. /etc/bash_completion
+export LS_COLORS="di=36:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:or=30;41:mi=30;46"
 
 # emacs
-export EDITOR="emacsclient -ct -a ''"
+export EDITOR=nano
+>/dev/null command -v emacs &&
+    export EDITOR="emacsclient -ct -a ''"
+
+# ssh agent
+eval "$(ssh-agent -s)"
 
 # PS1
 export GIT_PS1_SHOWSTASHSTATE=true
 export GIT_PS1_SHOWUNTRACKEDFILES=true
 export GIT_PS1_SHOWDIRTYSTATE=true
-export PROMPT_COMMAND='prompt_exit LX; prompt_history ; prompt_sshid'
-if [ "$TERM" != "dumb" ]; then
-    # set a fancy prompt
-    export PS1='\[\e[33m\]\h'
-    export PS1+='\[\e[36m\]${SSHID:+[${SSHID}]}'
-    export PS1+='\[\e[35m\]($(_gitps1))'
-    export PS1+='\[\e[32m\]${LX:+\[\e[31m\]($LX)}$'
-    export PS1+='\[\e[0m\] '
-else
-    export PS1="\\h\\$ "
-fi
+export GIT_PS1
+export LAST_EXIT
+export SSHID
+export PROMPT_COMMAND='_prompt LAST_EXIT; _prompt history; _prompt GIT_PS1; _prompt SSHID'
 
+PS1='\[\e[33m\]\h'
+PS1+='\[\e[36m\]${SSHID:+[${SSHID}]}'
+PS1+='\[\e[35m\]($GIT_PS1)'
+PS1+='\[\e[32m\]${LAST_EXIT:+\[\e[31m\]($LAST_EXIT)}$'
+PS1+='\[\e[0m\] '
+
+# aliases
 dir()  { ls -AlFh --color "$@"; }
 dirt() { dir -rt "$@"; }
 dird() { dir -d "$@"; }
 rea()  { history | grep -E "${@:-}"; }
 c()    { cat "$@"; }
-g()    { grep -nIHE --color "$@"; }
 m()    { less "$@"; }
 
 _gitps1() {
@@ -57,16 +57,13 @@ _gitps1() {
     fi
 }
 
-prompt_exit() {
-    eval "$1='$?'; [ \$$1 == 0 ] && unset $1"
-}
-
-prompt_history() {
-    history -a
-}
-
-prompt_sshid() {
-    SSHID=""
+_prompt() {
+    case "${1:-}" in
+        LAST_EXIT) LAST_EXIT=$?; [ $LAST_EXIT == 0 ] && unset LAST_EXIT;;
+        GIT_PS1)   GIT_PS1="$(_gitps1)";;
+        SSHID)     SSHID="$(~/bin/sshid.sh)" || unset SSHID;;
+        history)   history -a;;
+    esac
 }
 
 ## history
