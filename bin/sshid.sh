@@ -48,9 +48,16 @@ _id2file() {
 }
 
 _show() {
-    if ids="$(ssh-add -l | cut -f3 -d" ")"
-    then echo "$ids"
+    local X=""
+    if is="$(ssh-add -l | cut -f3 -d" ")"
+    then for i in $is
+	 do if [ -z "$X" ]
+	    then X="$i"
+	    else X+=":$i"
+	    fi
+	 done
     fi
+    echo "$X"
 }
 
 _list() {
