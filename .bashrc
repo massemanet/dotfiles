@@ -46,6 +46,15 @@ rea()  { history | grep -E "${@:-}"; }
 c()    { cat "$@"; }
 m()    { less "$@"; }
 
+e() {
+    if ! emacsclient -ct "$1"
+    then if emacs --daemon
+	 then emacsclient -ct "$1"
+	 else "failed to start emacs server"
+	 fi
+    fi
+}
+
 _gitps1() {
     if ! GDIR="$(2>/dev/null git rev-parse --show-toplevel)"
     then echo ":"
