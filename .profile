@@ -1,10 +1,19 @@
+#!/usr/bin/env bash
+
 # one path to rule them all
 export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
-[ -d /opt/bin ] && PATH=/opt/bin:$PATH
-[ -d "$HOME/bin" ] && PATH=$HOME/bin:$PATH
-[ -d "$HOME/.cargo/bin" ] && PATH="$HOME/.cargo/bin:$PATH"
-[ -d "/usr/local/go/bin" ] && PATH="/usr/local/go/bin:$PATH"
+_pds() {
+   cat <<HERE
+/opt/bin
+$HOME/bin
+$HOME/.cargo/bin
+/usr/local/go/bin
+HERE
+}
+for P in $(_pds)
+do [ -d "$P" ] && PATH="$P:$PATH"
+done
 
 # one locale to rule them all
 unset  LC_ALL
@@ -16,4 +25,4 @@ then export LANG="C"
 else export LANG="$L"
 fi
 
-eval "$(ssh-agent -s)"
+export GNUPGHOME=$HOME/git/pet/files/.gnupg
