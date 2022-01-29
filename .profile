@@ -24,5 +24,3 @@ if [ -z "$L" ]
 then export LANG="C"
 else export LANG="$L"
 fi
-
-export GNUPGHOME=$HOME/git/pet/files/.gnupg
