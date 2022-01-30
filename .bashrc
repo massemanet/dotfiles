@@ -15,11 +15,6 @@ shopt -s checkwinsize
 # pretty colors
 export LS_COLORS="di=36:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:or=30;41:mi=30;46"
 
-# emacs
-export EDITOR=nano
->/dev/null command -v emacs &&
-    export EDITOR="emacsclient -ct -a ''"
-
 # ssh agent
 eval "$(ssh-agent -s)"
 
@@ -46,13 +41,17 @@ rea()  { history | grep -E "${@:-}"; }
 c()    { cat "$@"; }
 m()    { less "$@"; }
 
+# emacs
+if >/dev/null command -v emacs
+then export EDITOR="emacsclient -nw -c --alternate-editor="
+else export EDITOR=nano
+fi
+
 e() {
-    if ! emacsclient -ct "$1"
-    then if emacs --daemon
-	 then emacsclient -ct "$1"
-	 else "failed to start emacs server"
-	 fi
-    fi
+    case "${1:-}" in
+	"") $EDITOR ;;
+	*)  $EDITOR -c "$1";;
+    esac
 }
 
 _gitps1() {
