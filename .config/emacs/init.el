@@ -78,6 +78,14 @@
  scroll-down-aggressively       0.1
  scroll-up-aggressively         0.1)
 
+(defun set-exec-path ()
+  "Set up Emacs' variable `exec-path' and PATH environment variable."
+  (interactive)
+  (let* ((shell-path (shell-command-to-string "$SHELL --login -c 'echo $PATH'"))
+	 (path-from-shell (replace-regexp-in-string "[ \t\n]*$" "" shell-path)))
+    (setenv "PATH" path-from-shell)
+    (setq exec-path (split-string path-from-shell path-separator))))
+
 (defun ido-kill-emacs-hook ()
   "Ido is annoying."
   (declare-function ido-save-history "ext:")
@@ -101,7 +109,8 @@ Repeated invocations toggle between the two most recently open buffers."
 (global-set-key (kbd "C-x %")   `query-replace)
 (global-set-key (kbd "C-x ,")   'beginning-of-buffer)
 (global-set-key (kbd "C-x .")   'end-of-buffer)
-(global-set-key (kbd "C-x C-r")	'revert-buffer)
+(global-set-key (kbd "C-x ;")   'eval-expression)
+(global-set-key (kbd "C-x C-r") 'revert-buffer)
 (global-set-key (kbd "C-x O")   `switch-to-previous-buffer)
 (global-set-key (kbd "C-x T")   `transpose-words)
 (global-set-key (kbd "C-x [")   'flycheck-previous-error)
@@ -126,21 +135,31 @@ Repeated invocations toggle between the two most recently open buffers."
   (define-key map (kbd "C-n")   'next-history-element)
   (define-key map (kbd "C-p")   'previous-history-element))
 
+(defun local-loader (features paths)
+  "Look in PATHS for FEATURES to add to load path."
+  (mapc
+   (lambda (feature)
+     (mapc
+      (lambda (path)
+	(let ((fp (concat path (symbol-name feature))))
+	  (if (file-exists-p fp)
+	      (add-to-list 'load-path fp))))
+      paths))
+   features))
+
 (add-hook
  'after-init-hook
  (lambda ()
-   (progn
-     (load-theme 'tsdh-dark)
-     (add-to-list 'load-path (expand-file-name "masserlang" user-emacs-directory))
-     (require 'masserlang)
-     (add-to-list 'load-path (expand-file-name "fdlcap" user-emacs-directory))
-     (require 'fdlcap))))
+   (set-exec-path)
+   (load-theme 'tsdh-dark)
+   (local-loader
+    '(masserlang fdlcap hippierl)
+    (list "~/git/" user-emacs-directory))))
 
 (add-hook
  'ediff-mode-hook
  (lambda ()
-   (progn
-     (set-face-attribute 'ediff-fine-diff-B nil :background "#055505"))))
+   (set-face-attribute 'ediff-fine-diff-B nil :background "#055505")))
 
 (provide 'init)
 ;;; init.el ends here
