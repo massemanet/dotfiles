@@ -4,10 +4,10 @@
 ;;; Code:
 ;;; an init file.
 
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
+;; (defvar bootstrap-version)
+(let* ((bootstrap-path "straight/repos/straight.el/bootstrap.el")
+       (bootstrap-file (expand-file-name bootstrap-path user-emacs-directory))
+       (bootstrap-version 5))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
         (url-retrieve-synchronously
@@ -56,9 +56,9 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 
 ;; turn off bad shit
+;;(if (featurep 'scroll-bar) (scroll-bar-mode -1))
 (if (featurep 'tool-bar)   (tool-bar-mode   -1))
 (if (featurep 'tooltip)    (tooltip-mode    -1))
-(if (featurep 'scroll-bar) (scroll-bar-mode -1))
 (if (featurep 'menu-bar)   (menu-bar-mode   -1))
 
 (require 'term)

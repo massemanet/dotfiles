@@ -21,6 +21,14 @@ LANG="$(locale -a | grep -Ei "en.us.utf")"
     adduser masse sudo &&
     exit 0
 
+# disable remote root login
+[[ "$(grep PermitRootLogin /etc/ssh/sshd_config | cut -c1 | uniq)" != "#" ]] &&
+    sed '/PermitRootLogin/ s/.*/#&/g' /etc/ssh/sshd_config > ~/sshd_config &&
+    read -ep "Remove remote root login from /etc/ssh/sshd_config?: " A &&
+    [ "$A" = "y" ] &&
+    sudo mv ~/sshd_config /etc/ssh/sshd_config &&
+    sudo service ssh restart
+
 # set up sudo
 command -v sudo || su root -c "apt install -y sudo"
 groups | grep -q sudo || su root -c "/sbin/adduser $USER sudo"
@@ -30,31 +38,46 @@ sudo apt-get update &&
     sudo apt-get upgrade -y &&
     sudo apt-get install --autoremove -y \
          aspell-en aspell-sv automake \
-         bind9-dnsutils g++ gdb git iputils-ping \
+         bind9-dnsutils emacs-nox erlang-nox \
+	 g++ gdb git iputils-ping \
          jq lsof make mosh ncdu netcat-traditional \
          pandoc pass psmisc shellcheck socat strace sysstat \
          tcpdump texlive-latex-recommended tmux traceroute whois
 
 # get manèt stuff
 [ ! -e ~/.git ] &&
-    (cd /tmp &&
-         rm -rf dotfiles &&
-         git clone https://git.sr.ht/~massemanet/dotfiles dotfiles &&
-         cd dotfiles &&
-         git remote set-url origin git@git.sr.ht:~massemanet/dotfiles &&
-         mv .git ~ &&
-         cd ~ &&
-         git checkout server
-         git reset --hard)
+    cd /tmp &&
+    rm -rf dotfiles &&
+    git clone https://git.sr.ht/~massemanet/dotfiles dotfiles &&
+    cd dotfiles &&
+    git remote set-url origin git@git.sr.ht:~massemanet/dotfiles &&
+    mv .git ~ &&
+    cd ~ &&
+    git reset --hard &&
+    git checkout server
 
+# make a secret pet
 [ ! -e ~/git/pet ] &&
-    (cd ~/git &&
-         git clone https://git.sr.ht/~massemanet/pet &&
-         cd pet &&
-         ./pet pull)
+    mkdir -p ~/git &&
+    cd ~/git &&
+    git clone https://git.sr.ht/~massemanet/pet &&
+    cd pet &&
+    git remote set-url origin git@git.sr.ht:~massemanet/pet &&
+    ./pet secret
 
-# install utilities
-# command -v emacs || ~/bin/install.sh emacs
-# command -v erl   || ~/bin/install.sh erlang
-# command -v docker        || ~/bin/install.sh docker
+# enable passwordless login for user
+[ -f ~/git/pet/files/ssh/id_server.pub ] &&
+    mkdir -p ~/.ssh &&
+    chmod 700 ~/.ssh &&
+    cp ~/git/pet/files/ssh/id_server.pub ~/.ssh/authorized_keys
 
+# emacs/straight downloads the whole world. let's move OTP to a more
+# useful place.
+emacs --batch --eval "(require 'init (expand-file-name \"init.el\" user-emacs-directory))"
+[ -d ~/.config/emacs/straight/repos/otp ] &&
+    [ ! -L ~/.config/emacs/straight/repos/otp ] &&
+    mv ~/.config/emacs/straight/repos/otp ~/git &&
+    ln -s ~/git/otp ~/.config/emacs/straight/repos
+
+# the end
+exit 0
