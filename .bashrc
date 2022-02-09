@@ -55,13 +55,14 @@ e() {
 }
 
 _gitps1() {
-    if ! GDIR="$(2>/dev/null git rev-parse --show-toplevel)"
-    then echo ":"
-    else GBRANCH="$(__git_ps1 "%s")"
-         if [ "$GDIR" == "$HOME" ]
-         then echo "~:$GBRANCH"
-         else echo "$(basename "$GDIR"):$GBRANCH"
+    local DIR BRANCH
+    if DIR="$(2>/dev/null git rev-parse --show-toplevel)"
+    then BRANCH="$(2>/dev/null __git_ps1 "%s")"
+         if [ "$DIR" == "$HOME" ]
+         then echo "~:$BRANCH"
+         else echo "$(basename "$DIR"):$BRANCH"
          fi
+    else echo ":"
     fi
 }
 
@@ -75,15 +76,12 @@ _prompt() {
 }
 
 ## history
-# unlimited history
+# unlimited history, no dupes, no ts, handle multiple shells
 export HISTSIZE=
 export HISTFILESIZE=
-
-# agglomerate history from multiple shells
 export HISTCONTROL="ignoredups"
+unset HISTTIMEFORMAT
 shopt -s histappend
-
-# multi-line commands
 shopt -s cmdhist
 
 # motd
