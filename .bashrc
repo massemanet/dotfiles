@@ -49,8 +49,8 @@ fi
 
 e() {
     case "${1:-}" in
-	"") $EDITOR ;;
-	*)  $EDITOR -c "$1";;
+        "") $EDITOR ;;
+        *)  $EDITOR -c "$1";;
     esac
 }
 
