@@ -4,6 +4,7 @@
 ;;; Code:
 
 (require 'erlang-start)
+(require 'hippierl)
 
 (defun my-shell-mode ()
   "My erlang shell mode bindings."
@@ -23,49 +24,32 @@
 
 (defun my-erlang-mode-hook ()
   "We want company mode and flycheck."
+  (hippierl-init)
   (setq
-   flycheck-erlang-include-path (append
-                                 (file-expand-wildcards
-                                  (concat
-                                   (flycheck-rebar3-project-root)
-                                   "_build/*/lib/*/include"))
-                                 (file-expand-wildcards
-                                  (concat
-                                   (flycheck-rebar3-project-root)
-                                   "_checkouts/*/include")))
-   flycheck-erlang-library-path (append
-                                 (file-expand-wildcards
-                                  (concat
-                                   (flycheck-rebar3-project-root)
-                                   "_build/*/lib/*/ebin"))
-                                 (file-expand-wildcards
-                                  (concat
-                                   (flycheck-rebar3-project-root)
-                                   "_checkouts/*/ebin")))))
+   flycheck-erlang-executable
+   "/usr/local/bin/erlc"
+   flycheck-erlang-include-path
+   (append
+    (file-expand-wildcards
+     (concat
+      (flycheck-rebar3-project-root)
+      "_build/*/lib/*/include"))
+    (file-expand-wildcards
+     (concat
+      (flycheck-rebar3-project-root)
+      "_checkouts/*/include")))
+   flycheck-erlang-library-path
+   (append
+    (file-expand-wildcards
+     (concat
+      (flycheck-rebar3-project-root)
+      "_build/*/lib/*/ebin"))
+    (file-expand-wildcards
+     (concat
+      (flycheck-rebar3-project-root)
+      "_checkouts/*/ebin")))))
 
 (add-hook 'erlang-mode-hook 'my-erlang-mode-hook)
-
-(pcase '(add 1 2)
-  (`(add ,x ,y)  (message "Contains %S and %S" x y)))
-
-(defun erl-find()
-  "An erl finder."
-  (interactive)
-  (pcase (erlang-get-identifier-at-point)
-    (`(nil ,_ ,function ,arity)
-     (message "%s/%d" function arity))
-    (`(qualified-function ,module ,function ,arity)
-     (message "%s:%s/%d" module function arity))
-    (`(record ,_ ,name ,_)
-     (message "#%s{}" name))
-    (`(macro ,_ ,name ,'nil)
-     (message "?%s/0" name))
-    (`(macro ,_ ,name ,arity)
-     (message "?%s/%s" name arity))
-    (`(module ,_ ,name ,_)
-     (message "-%s" name))
-    ('nil
-     (message "nothing."))))
 
 (defun my-erlang-new-file-hook ()
   "Insert my very own erlang file header."
