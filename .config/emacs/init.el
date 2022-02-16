@@ -4,7 +4,6 @@
 ;;; Code:
 ;;; an init file.
 
-;; (defvar bootstrap-version)
 (let* ((bootstrap-path "straight/repos/straight.el/bootstrap.el")
        (bootstrap-file (expand-file-name bootstrap-path user-emacs-directory))
        (bootstrap-version 5))
@@ -16,8 +15,8 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
-(require 'straight (expand-file-name "straight/repos/straight.el/straight.el" user-emacs-directory))
 
+;; select packages
 (straight-use-package 'doom-modeline)
 (straight-use-package '(flycheck :fork "massemanet/flycheck"))
 (straight-use-package 'flycheck-popup-tip)
@@ -38,38 +37,37 @@
 (straight-use-package 'nyan-mode)
 (straight-use-package 'rainbow-delimiters)
 
+;; needed to make flycheck happy
+(require 'straight)
+(require 'nyan-mode)
+(require 'flycheck)
+(require 'flycheck-popup-tip)
+(require 'doom-modeline)
+(require 'ediff)
+(setq flycheck-emacs-lisp-load-path 'inherit)
+
 ;; turn on good shit
 (show-paren-mode t)
 (transient-mark-mode t)
 (global-font-lock-mode t)
 (delete-selection-mode 1)
 (ido-mode t)
-(declare-function nyan-mode "ext:")
 (nyan-mode 1)
-(declare-function global-flycheck-mode "ext:")
 (global-flycheck-mode)
-(declare-function flycheck-popup-tip-mode "ext:")
 (flycheck-popup-tip-mode)
-(declare-function doom-modeline-mode "ext:")
 (doom-modeline-mode)
 
 (fset 'yes-or-no-p 'y-or-n-p)
 
 ;; turn off bad shit
-;;(if (featurep 'scroll-bar) (scroll-bar-mode -1))
 (if (featurep 'tool-bar)   (tool-bar-mode   -1))
 (if (featurep 'tooltip)    (tooltip-mode    -1))
 (if (featurep 'menu-bar)   (menu-bar-mode   -1))
 
-(require 'term)
-(eval-after-load "term"
-  '(define-key term-raw-map (kbd "C-c C-y") 'term-paste))
-
-(require 'ediff)
+;; configs
+(setq-default indent-tabs-mode nil)
 (setq
  indent-tabs-mode               nil
- explicit-shell-file-name       "/bin/bash"
- vc-handled-backends            nil
  ediff-window-setup-function    'ediff-setup-windows-plain
  inhibit-startup-screen         t
  visible-bell                   nil
@@ -78,6 +76,58 @@
  scroll-down-aggressively       0.1
  scroll-up-aggressively         0.1)
 
+;; keybindings
+(global-set-key (kbd "C-j")     `scroll-down)
+(global-set-key (kbd "C-x !")   `shell-command)
+(global-set-key (kbd "C-x %")   `query-replace)
+(global-set-key (kbd "C-x ,")   'beginning-of-buffer)
+(global-set-key (kbd "C-x .")   'end-of-buffer)
+(global-set-key (kbd "C-x ;")   'eval-expression)
+(global-set-key (kbd "C-x C-r") 'revert-buffer)
+(global-set-key (kbd "C-x C-x") 'execute-extended-command)
+(global-set-key (kbd "C-x C-y") `yank-pop)
+(global-set-key (kbd "C-x O")   `switch-to-previous-buffer)
+(global-set-key (kbd "C-x T")   `transpose-words)
+(global-set-key (kbd "C-x [")   'flycheck-previous-error)
+(global-set-key (kbd "C-x ]")   'flycheck-next-error)
+(global-set-key (kbd "C-x a")   'align-regexp)
+(global-set-key (kbd "C-x g")   `goto-line)
+(global-set-key (kbd "C-x n")   `forward-list)
+(global-set-key (kbd "C-x o")   'prev-window)
+(global-set-key (kbd "C-x p")   `backward-list)
+(global-set-key (kbd "C-x q")   `fill-paragraph)
+(global-set-key (kbd "C-x t")   `transpose-lines)
+(global-set-key (kbd "C-x v")   `scroll-down)
+(global-set-key (kbd "C-x w")   `kill-ring-save)
+(global-set-key (kbd "C-x {")   `previous-error)
+(global-set-key (kbd "C-x }")   `next-error)
+(global-set-key (kbd "C-z")     'undo) ; be like a mac
+(global-set-key (kbd "M-z")     'undo) ; if screen eats C-z
+
+(let ((map minibuffer-local-map))
+  (define-key map (kbd "C-n")   'next-history-element)
+  (define-key map (kbd "C-p")   'previous-history-element))
+
+(let ((map minibuffer-local-map))
+  (define-key map (kbd "C-n")   'next-history-element)
+  (define-key map (kbd "C-p")   'previous-history-element))
+
+;; hooks
+(add-hook
+ 'after-init-hook
+ (lambda ()
+   (set-exec-path)
+   (load-theme 'tsdh-dark)
+   (local-loader
+    '(hippierl masserlang fdlcap)
+    (list "~/git/" user-emacs-directory))))
+
+(add-hook
+ 'ediff-mode-hook
+ (lambda ()
+   (set-face-attribute 'ediff-fine-diff-B nil :background "#055505")))
+
+;; utilities
 (defun set-exec-path ()
   "Set up Emacs' variable `exec-path' and PATH environment variable."
   (interactive)
@@ -102,39 +152,6 @@ Repeated invocations toggle between the two most recently open buffers."
   (interactive)
   (select-window (previous-window (selected-window) nil nil)))
 
-;; keybindings
-(global-set-key (kbd "TAB")     `indent-according-to-mode)
-(global-set-key (kbd "C-j")     `scroll-down)
-(global-set-key (kbd "C-x !")   `shell-command)
-(global-set-key (kbd "C-x %")   `query-replace)
-(global-set-key (kbd "C-x ,")   'beginning-of-buffer)
-(global-set-key (kbd "C-x .")   'end-of-buffer)
-(global-set-key (kbd "C-x ;")   'eval-expression)
-(global-set-key (kbd "C-x C-r") 'revert-buffer)
-(global-set-key (kbd "C-x O")   `switch-to-previous-buffer)
-(global-set-key (kbd "C-x T")   `transpose-words)
-(global-set-key (kbd "C-x [")   'flycheck-previous-error)
-(global-set-key (kbd "C-x ]")   'flycheck-next-error)
-(global-set-key (kbd "C-x a")   'align-regexp)
-(global-set-key (kbd "C-x g")   `goto-line)
-(global-set-key (kbd "C-x n")   `forward-list)
-(global-set-key (kbd "C-x o")   'prev-window)
-(global-set-key (kbd "C-x p")   `backward-list)
-(global-set-key (kbd "C-x q")   `fill-paragraph)
-(global-set-key (kbd "C-x t")   `transpose-lines)
-(global-set-key (kbd "C-x v")   `scroll-down)
-(global-set-key (kbd "C-x w")   `kill-ring-save)
-(global-set-key (kbd "C-x x")   'execute-extended-command)
-(global-set-key (kbd "C-x C-y") `yank-pop)
-(global-set-key (kbd "C-x {")   `previous-error)
-(global-set-key (kbd "C-x }")   `next-error)
-(global-set-key (kbd "C-z")     'undo) ; be like a mac
-(global-set-key (kbd "M-z")     'undo) ; if screen eats C-z
-
-(let ((map minibuffer-local-map))
-  (define-key map (kbd "C-n")   'next-history-element)
-  (define-key map (kbd "C-p")   'previous-history-element))
-
 (defun local-loader (features paths)
   "Look in PATHS for FEATURES to add to load path."
   (mapc
@@ -147,19 +164,5 @@ Repeated invocations toggle between the two most recently open buffers."
       paths))
    features))
 
-(add-hook
- 'after-init-hook
- (lambda ()
-   (set-exec-path)
-   (load-theme 'tsdh-dark)
-   (local-loader
-    '(masserlang fdlcap hippierl)
-    (list "~/git/" user-emacs-directory))))
-
-(add-hook
- 'ediff-mode-hook
- (lambda ()
-   (set-face-attribute 'ediff-fine-diff-B nil :background "#055505")))
-
 (provide 'init)
-;;; init.el ends here
+;;; init ends here

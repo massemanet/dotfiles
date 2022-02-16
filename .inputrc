@@ -1,0 +1,18 @@
+# enable briefly highlighting the opening parenthesis/bracket when you type the closing parenthesis/bracket.
+set blink-matching-paren on
+
+# enable colored highlighting of the part you've typed so far in completion results.
+set colored-completion-prefix off
+
+# enable ls-like coloring of directories and executables when listing possibilities for tab-completion.
+set colored-stats off
+
+# make tab-completion case-insensitive
+set completion-ignore-case off
+
+# paste blobs of text without any characters being interpreted as editing commands.
+set enable-bracketed-paste on
+
+"\C-j": "~"
+"\C-\e": "~"
+"\e1": "~"

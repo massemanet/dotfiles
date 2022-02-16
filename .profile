@@ -5,10 +5,12 @@ export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
 _pds() {
    cat <<HERE
-/opt/bin
-$HOME/bin
+/usr/local/opt/*/libexec/gnubin
+/usr/local/opt/*/bin
+/usr/local/*/bin
+/opt/*/bin
 $HOME/.cargo/bin
-/usr/local/go/bin
+$HOME/bin
 HERE
 }
 for P in $(_pds)
@@ -18,7 +20,6 @@ done
 # one locale to rule them all
 unset  LC_ALL
 unset  LANGUAGE
-unset  LC_CTYPE
 L="$(locale -a | grep -Ei "en.us.utf")"
 if [ -z "$L" ]
 then export LANG="C"
