@@ -17,6 +17,7 @@ foo*
 /.cache/
 /.cargo/
 /.cask/
+/.cloud-locale-test.skip
 /.config/
 /.dbus/
 /.docker/

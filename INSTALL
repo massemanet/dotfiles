@@ -1,40 +1,83 @@
 #!/bin/bash
 
-## if console font is unreadably small
-# cd /usr/share/consolefonts/
-# setfont Lat15-Terminus32x16.psf.gz
+# to get this file;
+# curl https://git.sr.ht/~massemanet/dotfiles/blob/server/INSTALL > ~/INSTALL
 
-## to temporarily attach to wifi
-# ip a
-# wpa_passphrase <ssid> <pwd> > /etc/wpa_supplicant/wpa_supplicant.conf
-# /sbin/wpa_supplicant -i<interface> -c/etc/wpa_supplicant/wpa_supplicant.conf -d &
+_err() {
+  [ -n "$1" ] && echo "$1"
+  exit 6
+}
 
-unset  LANGUAGE
-unset  LC_CTYPE
-LANG="$(locale -a | grep -Ei "en.us.utf")"
+# our user
+AUSER=masse
 
-# get manèt stuff
-[ ! -e ~/.git ] &&
-    cd /tmp &&
-    rm -rf dotfiles &&
-    git clone https://git.sr.ht/~massemanet/dotfiles dotfiles &&
-    cd dotfiles &&
-    git remote set-url origin git@git.sr.ht:~massemanet/dotfiles &&
-    mv .git ~ &&
-    cd ~ &&
-    git reset --hard &&
-    git checkout trunk
+unset LC_CTYPE
+unset LANGUAGE
+LANG="$(locale -a | grep -Ei "c.utf" || echo "C")"
 
-# init emacs
-command -v emacs &&
-    [ -f ~/.config/emacs/init.el ] &&
-    emacs --batch --eval "(require 'init (expand-file-name \"init.el\" user-emacs-directory))"
+# do we have apt?
+command -v apt-get || _err "not debian."
 
-# move otp out of the way
-[ -d ~/.config/emacs/straight/repos/otp ] &&
-    [ ! -L ~/.config/emacs/straight/repos/otp ] &&
-    mv ~/.config/emacs/straight/repos/otp ~/git &&
-    ln -s ~/git/otp ~/.config/emacs/straight/repos
+if [ "$USER" = "root" ]; then
+  command -v sudo || apt-get install -y sudo
+  grep "sudo:" /etc/group || _err "no sudo group."
+  if ! grep $AUSER: /etc/passwd; then
+    adduser $AUSER
+    adduser $AUSER sudo
+    mkdir /home/$AUSER/.ssh &&
+        cp ~/.ssh/authorized_keys /home/$AUSER/.ssh/ &&
+        chown -R $AUSER:$AUSER /home/$AUSER
+  fi
+fi
 
-# the end
-exit 0
+# install some sane stuff
+sudo apt-get update &&
+    sudo apt-get upgrade -y &&
+    sudo apt-get install --autoremove -y \
+         aspell-en aspell-sv automake \
+         bind9-dnsutils \
+         curl \
+         deborphan \
+         g++ gdb git \
+         jq \
+         lksctp-tools lsof \
+         make mosh \
+         ncdu netcat-traditional \
+         pandoc python-is-python3 \
+         ripgrep \
+         shellcheck shellinabox socat strace sysstat \
+         tcpdump texinfo texlive-latex-recommended tmux traceroute \
+         whois
+
+# get user stuff
+if [ "$USER" = $AUSER ]; then
+    cd ~ || _err "no ~$AUSER"
+    # get dotfiles
+    [ ! -e ~/.git ] &&
+        cd /tmp &&
+        rm -rf dotfiles &&
+        git clone https://git.sr.ht/~massemanet/dotfiles dotfiles &&
+        cd dotfiles &&
+        git remote set-url origin git@git.sr.ht:~massemanet/dotfiles &&
+        mv .git ~ &&
+        cd ~ &&
+        git reset --hard &&
+        git checkout server &&
+        chmod 700 .gnupg
+
+    # init emacs
+    command -v emacs &&
+        [ -f ~/.config/emacs/init.el ] &&
+        emacs --batch --eval "(require 'init (expand-file-name \"init.el\" user-emacs-directory))"
+
+    # move otp out of the way
+    if [ -d ~/.config/emacs/straight/repos/otp ] &&
+           [ ! -L ~/.config/emacs/straight/repos/otp ]; then
+        mkdir -p ~/git &&
+        rm -rf ~/git/otp &&
+        mv ~/.config/emacs/straight/repos/otp ~/git &&
+        ln -s ~/git/otp ~/.config/emacs/straight/repos
+    else
+        echo "emacs has OTP"
+    fi
+fi
