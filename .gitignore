@@ -75,7 +75,7 @@ foo*
 /.xsession-errors
 /_ssh/
 /autosave.h2song
-/bin/bazel
+/bin/rebar3
 /bin/docker-credential-*
 /bin/kubectl-*
 

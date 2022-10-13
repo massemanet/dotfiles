@@ -47,6 +47,7 @@ sudo apt-get update &&
          ripgrep \
          shellcheck shellinabox socat strace sysstat \
          tcpdump texinfo texlive-latex-recommended tmux traceroute \
+         unzip \
          whois
 
 # get user stuff

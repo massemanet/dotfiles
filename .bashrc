@@ -6,6 +6,11 @@
 [ -t 0 ] || return
 [[ "${-}" =~ 'i' ]] || return
 
+# keep the locale simple
+unset LC_CTYPE
+unset LANGUAGE
+LANG="$(locale -a | grep -Ei "c.utf" || echo "C")"
+
 # clean up
 unalias -a
 
