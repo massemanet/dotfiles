@@ -17,11 +17,8 @@ for P in $(_pds)
 do [ -d "$P" ] && PATH="$P:$PATH"
 done
 
-# one locale to rule them all
-unset  LC_ALL
-unset  LANGUAGE
-L="$(locale -a | grep -Ei "en.us.utf")"
-if [ -z "$L" ]
-then export LANG="C"
-else export LANG="$L"
-fi
+# keep the locale simple
+unset LC_CTYPE
+unset LC_ALL
+unset LANGUAGE
+LANG="$(locale -a | grep -Ei "en.us.utf" || locale -a | grep -Ei "c.utf" || echo "C")"

@@ -73,6 +73,14 @@ get-erlang() {
     sudo make install
 }
 
+get_et() {
+    URL="https://mistertea.github.io/debian-et"
+    echo "$URL/debian-source/ bullseye main" | sudo tee /etc/apt/sources.list.d/et.list
+    curl -sS "$URL//et.gpg" | sudo apt-key add -
+    sudo apt update && \
+        sudo apt install -y et
+}
+
 get-go() {
     local DL="golang.org/dl"
     local RE="go[0-9]+\.[0-9]+\.[0-9]+\.linux-amd64\.tar\.gz"

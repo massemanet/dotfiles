@@ -6,10 +6,8 @@
 [ -t 0 ] || return
 [[ "${-}" =~ 'i' ]] || return
 
-# keep the locale simple
-unset LC_CTYPE
-unset LANGUAGE
-LANG="$(locale -a | grep -Ei "c.utf" || echo "C")"
+# ssh-agent
+[ -z "${SSH_AUTH_SOCK:-}" ] && exec ssh-agent bash -l
 
 # clean up
 unalias -a
@@ -19,9 +17,6 @@ shopt -s checkwinsize
 
 # pretty colors
 export LS_COLORS="di=36:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:or=30;41:mi=30;46"
-
-# ssh agent
-eval "$(ssh-agent -s)"
 
 # PS1
 export GIT_PS1_SHOWSTASHSTATE=true
@@ -88,6 +83,3 @@ export HISTCONTROL="ignoredups"
 unset HISTTIMEFORMAT
 shopt -s histappend
 shopt -s cmdhist
-
-# motd
-uname -a
