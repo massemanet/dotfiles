@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # one path to rule them all
-export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+export PATH=/usr/local/bin:/usr/bin:/usr/sbin
 
 _pds() {
    cat <<HERE
