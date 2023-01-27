@@ -76,7 +76,6 @@ if [ "$USER" = "$AUSER" ]; then
         rm -rf dotfiles &&
         git clone https://git.sr.ht/~massemanet/dotfiles dotfiles &&
         cd dotfiles &&
-        git remote set-url origin git@git.sr.ht:~massemanet/dotfiles &&
         mv .git ~ &&
         cd ~ &&
         git reset --hard &&
