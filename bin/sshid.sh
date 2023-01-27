@@ -9,12 +9,16 @@ _err() {
 }
 
 _usage() {
+    local PROG
+    PROG=$(basename "$0")
     cat <<HERE
-$0 [show | rm | all | list | add <ID>]
+$PROG [help | show | rm | all | list | add <ID>]
 
-$0 works with IDs (a.k.a. "comments"); it doesn't care about filenames.
+$PROG works with IDs (a.k.a. "comments"); it doesn't care about filenames.
 It will look for identities in ~/git/pet/files/ssh and ~/.ssh.
 
+  help
+    show this text
   show
     show the currently active id(s)
   rm
@@ -35,41 +39,51 @@ _files() {
     echo ~/git/pet/files/ssh/*pub ~/.ssh/*pub
 }
 
-_file2id() {
-    cut -f3 -d" " < "$1"
+_to_id() {
+    local F="${1%.pub}.pub"
+
+    if [ -f "$F" ]
+    then cut -f3 -d" " < "$F"
+    else echo "$1"
+    fi
 }
 
-_id2file() {
-    local ID="$1"
-
-    for file in $(_files)
-    do grep -q "$ID" "$file" && echo "${file%.pub}" || true
-    done
+_to_file() {
+    if [ -f "$1" ]
+    then echo "$1"
+    else for file in $(_files)
+         do if [[ $(_to_id "$file") == "$1" ]]
+            then echo "${file%.pub}"
+            fi
+         done
+    fi
 }
 
 _show() {
-    local X=""
+    local ID IDs=""
+
     if is="$(ssh-add -l | cut -f3 -d" ")"
     then for i in $is
-	 do if [ -z "$X" ]
-	    then X="$i"
-	    else X+=":$i"
-	    fi
-	 done
+         do ID="$(_to_id "$i")"
+            if [ -z "$IDs" ]
+            then IDs="$ID"
+            else IDs+=":$ID"
+            fi
+         done
     fi
-    echo "$X"
+    echo "$IDs"
 }
 
 _list() {
     for f in $(_files)
-    do _file2id "$f"
-    done    
+    do _to_id "$f"
+    done
 }
 
 _add() {
     local ID="$1"
 
-    if file="$(_id2file "$ID")" && [ -f "$file" ]
+    if file="$(_to_file "$ID")" && [ -f "$file" ]
     then ssh-add "$file"
     else _err "no such id: $ID"
     fi
@@ -77,7 +91,7 @@ _add() {
 
 _all() {
     for i in $(_list)
-    do _add $i
+    do _add "$i"
     done
 }
 
@@ -90,18 +104,19 @@ _rename() {
     local NEWID="$2"
     local file
 
-    [ -z "$OLDID" -o -z "$NEWID" ] && _err "usage: rename <OLDID> <NEWID>"
-    file="$(_id2file "$OLDID")"
+    [ -z "$OLDID" ] || [ -z "$NEWID" ] && _err "usage: rename <OLDID> <NEWID>"
+    file="$(_to_file "$OLDID")"
     [ ! -f "$file" ] && _err "no such identity: $OLDID"
     ssh-keygen -c -C "$NEWID" -f "$file"
 }
 
 case "${1:-}" in
-    ""|show)   _show;;
-    rm)     _rm;;
-    all)    _all;;
-    list)   _list;;
-    add)    _add "${2:-}";;
-    rename) _rename "${2:-}" "${3:-}";;
-    *)      _err "no such command: $1"
+    ""|show) _show;;
+    help)    _usage;;
+    rm)      _rm;;
+    all)     _all;;
+    list)    _list;;
+    add)     _add "${2:-}";;
+    rename)  _rename "${2:-}" "${3:-}";;
+    *)       _err "no such command: $1"
 esac
