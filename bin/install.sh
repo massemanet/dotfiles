@@ -54,22 +54,40 @@ get-emacs() {
 
 # install erlang + rebar + redbug
 get-erlang() {
-    local VSN="${1:-23}"
+    local VSN="${1:-25}"
 
     command -v make > /dev/null || err "install 'make'"
     command -v automake > /dev/null || err "install 'automake'"
     command -v autoconf > /dev/null || err "install 'autoconf'"
 
+    sudo apt-get update &&
+        sudo apt-get install -yq --no-install-recommends \
+             autoconf \
+             build-essential \
+             ca-certificates \
+             liblttng-ust-dev \
+             liblttng-ust0 \
+             libncurses-dev \
+             libpcap-dev \
+             libpcap0.8 \
+             libsctp-dev \
+             libsctp1 \
+             libssl-dev \
+             libssl1.1 \
+             lksctp-tools \
+             make
     [ -d ~/git/otp ] || git clone --depth=1 https://github.com/erlang/otp.git ~/git/otp
     cd ~/git/otp/
     git remote set-branches origin 'maint-*'
     git fetch -v
     git co "maint-$VSN"
-    git pull --depth=2 --ff-only
+    git pull --depth=1 --ff-only
     git clean -fdx
-    ./otp_build autoconf
-    ./configure --without-megaco --without-odbc --without-jinterface --without-javac
-    make
+    ./configure \
+        --without-javac --without-jinterface --without-odbc --without-megaco \
+        --with-dynamic-trace=lttng --enable-hipe --enable-sctp=lib \
+        --enable-lock-counter
+    make -j4
     sudo make install
 }
 

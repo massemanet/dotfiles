@@ -4,30 +4,47 @@
 # curl https://git.sr.ht/~massemanet/dotfiles/blob/server/INSTALL > ~/INSTALL
 
 _err() {
-  [ -n "$1" ] && echo "$1"
-  exit 6
+    [ -n "$1" ] && echo "$1"
+    exit 6
 }
 
-# our user
-AUSER=masse
-
+# C locale ftw
 unset LC_CTYPE
 unset LANGUAGE
 LANG="$(locale -a | grep -Ei "c.utf" || echo "C")"
 
-# do we have apt?
-command -v apt-get || _err "not debian."
+# sane path
+export PATH=/usr/local/bin:/usr/bin:/usr/sbin
 
-if [ "$USER" = "root" ]; then
-  command -v sudo || apt-get install -y sudo
-  grep "sudo:" /etc/group || _err "no sudo group."
-  if ! grep $AUSER: /etc/passwd; then
-    adduser $AUSER
-    adduser $AUSER sudo
-    mkdir /home/$AUSER/.ssh &&
-        cp ~/.ssh/authorized_keys /home/$AUSER/.ssh/ &&
-        chown -R $AUSER:$AUSER /home/$AUSER
-  fi
+# do we have apt?
+command -v apt-get || _err "no apt."
+
+# we want sudo
+if ! command -v sudo
+then if [ "$USER" = "root" ]
+     then apt-get install -y sudo
+     else _err "no sudo."
+     fi
+fi
+grep "sudo:" /etc/group || _err "no sudo group."
+
+# add our user
+AUSER=masse
+ADDUSER=$(cat <<HERE
+adduser "$AUSER" &&
+adduser "$AUSER" sudo &&
+mkdir "/home/$AUSER/.ssh" &&
+cp .ssh/authorized_keys "/home/$AUSER/.ssh/" &&
+chown -R "$AUSER:$AUSER" "/home/$AUSER"
+HERE
+       )
+
+# we're either root, or an admin user who can do sudo.
+if ! grep "$AUSER:" /etc/passwd
+then if [ "$USER" = "root" ]
+     then sh -c "$ADDUSER"
+     else sudo sh -c "$ADDUSER"
+     fi
 fi
 
 # install some sane stuff
@@ -38,20 +55,20 @@ sudo apt-get update &&
          bind9-dnsutils \
          curl \
          deborphan \
+         emacs-nox \
          g++ gdb git \
          jq \
          lksctp-tools lsof \
-         make mosh \
+         make \
          ncdu netcat-traditional \
          pandoc python-is-python3 \
-         ripgrep \
-         shellcheck shellinabox socat strace sysstat \
-         tcpdump texinfo texlive-latex-recommended tmux traceroute \
+         shellcheck socat strace sysstat \
+         tcpdump texinfo texlive-latex-recommended traceroute tree \
          unzip \
          whois
 
 # get user stuff
-if [ "$USER" = $AUSER ]; then
+if [ "$USER" = "$AUSER" ]; then
     cd ~ || _err "no ~$AUSER"
     # get dotfiles
     [ ! -e ~/.git ] &&
@@ -64,21 +81,21 @@ if [ "$USER" = $AUSER ]; then
         cd ~ &&
         git reset --hard &&
         git checkout server &&
-        chmod 700 .gnupg
+        chmod 700 .gnupg &&
+        echo "installed dotfiles"
 
     # init emacs
     command -v emacs &&
-        [ -f ~/.config/emacs/init.el ] &&
-        emacs --batch --eval "(require 'init (expand-file-name \"init.el\" user-emacs-directory))"
-
-    # move otp out of the way
-    if [ -d ~/.config/emacs/straight/repos/otp ] &&
-           [ ! -L ~/.config/emacs/straight/repos/otp ]; then
+        EMACSDIR="$(eval readlink -f "$(2>&1 emacs --no-site-file --batch --eval "(message user-emacs-directory)")")" &&
+        rm -rf ~/.emacs.d &&
+        ln -s ~/.config/emacs ~/.emacs.d &&
+        [ -f "$EMACSDIR/init.el" ] &&
+        emacs --no-site-file --batch --eval "(require 'init \"$EMACSDIR/init.el\")" &&
+        [ -d "$EMACSDIR/straight/repos/otp" ] &&
+        [ ! -L "$EMACSDIR/straight/repos/otp" ] &&
         mkdir -p ~/git &&
         rm -rf ~/git/otp &&
-        mv ~/.config/emacs/straight/repos/otp ~/git &&
-        ln -s ~/git/otp ~/.config/emacs/straight/repos
-    else
-        echo "emacs has OTP"
-    fi
+        mv "$EMACSDIR/straight/repos/otp" ~/git &&
+        ln -s ~/git/otp "$EMACSDIR/straight/repos" &&
+        echo "installed emacs"
 fi

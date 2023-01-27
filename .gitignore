@@ -21,7 +21,7 @@ foo*
 /.config/
 /.dbus/
 /.docker/
-/.emacs.*/
+/.emacs.*
 /.erlang
 /.erlang.cookie
 /.face*
@@ -79,6 +79,7 @@ foo*
 /bin/docker-credential-*
 /bin/kubectl-*
 
+.DS_Store
 /Desktop/
 /Downloads/
 /Pictures/
