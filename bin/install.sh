@@ -41,8 +41,31 @@ get-docker() {
     (cd ~/bin; ln -s ../pet/docker/docker-credential-pass . ; cd ~/.docker ; ln -s ../pet/docker/config.json .)
 }
 
-# emacs for wayland
+
+_elisp() {
+    [ -z "${1:-}" ] && _err "Provide elisp."
+    2>&1 emacs --no-site-file --batch --eval "$1"
+}
+
+# init emacs
 get-emacs() {
+    command -v emacs || sudo apt-get install -y emacs-nox
+    EMACSDIR="$(eval readlink -f "$(_elisp "(message user-emacs-directory)")")" &&
+        rm -rf ~/.emacs.d &&
+        ln -s ~/.config/emacs ~/.emacs.d &&
+        [ -f "$EMACSDIR/init.el" ] &&
+        _elisp "(require 'init \"$EMACSDIR/init.el\")" &&
+        [ -d "$EMACSDIR/straight/repos/otp" ] &&
+        [ ! -L "$EMACSDIR/straight/repos/otp" ] &&
+        mkdir -p ~/git &&
+        rm -rf ~/git/otp &&
+        mv "$EMACSDIR/straight/repos/otp" ~/git &&
+        ln -s ~/git/otp "$EMACSDIR/straight/repos" &&
+        echo "installed emacs"
+}
+
+# emacs for wayland
+get-emacs-wayland() {
     cd ~/git
     [ -d emacs ] || git clone --branch feature/pgtk --single-branch git://git.sv.gnu.org/emacs.git
     cd emacs/
@@ -127,9 +150,37 @@ _get-github () {
     echo "installed $PROJ::$VSN in $TARG"
 }
 
+get-awscli() {
+    sudo apt-get install -y awscli &&
+        sudo cp "$(command -v aws_completer)" /etc/bash_completion.d/
+}
+
+get-aws-vault() {
+    _get-github "99designs" "aws-vault" "-linux-amd64" "${1:-}"
+    curl -fsSLo https://raw.githubusercontent.com/99designs/aws-vault/v6.6.2/contrib/completions/bash/aws-vault.bash /tmp/aws-vault-complete &&
+        sudo cp /tmp/aws-vault-complete /etc/bash_completion.d/
+}
+
 get-bazelisk() {
+    local COMPLETER=~/git/loltel/script/bazel-complete.bash
     _get-github "bazelbuild" "bazelisk" "-linux-amd64" "${1:-}"
+    [ -f "$COMPLETER" ] && sudo ln -s "$COMPLETER" /etc/bash_completion.d/
     rm -f ~/bin/bazel && ln -s /usr/local/bin/bazelisk ~/bin/bazel
+}
+
+get-kubectl() {
+    local KEYRING=/etc/apt/keyrings/kubernetes-archive-keyring.gpg
+    local APTKEY=https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    local REPO=https://apt.kubernetes.io/
+    local LIST=/etc/apt/sources.list.d/kubernetes.list
+    sudo apt-get install -y ca-certificates curl &&
+        sudo mkdir -p /etc/apt/keyrings &&
+        sudo curl -fsSLo "$KEYRING" "$APTKEY" &&
+        echo "deb [signed-by=$KEYRING] $REPO kubernetes-xenial main" | sudo tee "$LIST" &&
+        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B53DC80D13EDEF05 &&
+        sudo apt-get update &&
+        sudo apt-get install -y kubectl &&
+        kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl-complete > /dev/null
 }
 
 get-rebar() {

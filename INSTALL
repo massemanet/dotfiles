@@ -47,6 +47,18 @@ then if [ "$USER" = "root" ]
      fi
 fi
 
+[ "$USER" = "$AUSER" ] || _err "Log in as $AUSER"
+
+if [ -d /etc/update-motd.d ]
+then sudo rm /etc/update-motd.d/*
+     sudo tee /etc/update-motd.d/00-motd <<HERE
+#!/usr/bin/env sh
+uname -a
+HERE
+     sudo chmod 755 /etc/update-motd.d/00-motd
+     echo "motd fixup"
+fi
+
 # install some sane stuff
 sudo apt-get update &&
     sudo apt-get upgrade -y &&
@@ -82,19 +94,4 @@ if [ "$USER" = "$AUSER" ]; then
         git checkout server &&
         chmod 700 .gnupg &&
         echo "installed dotfiles"
-
-    # init emacs
-    command -v emacs &&
-        EMACSDIR="$(eval readlink -f "$(2>&1 emacs --no-site-file --batch --eval "(message user-emacs-directory)")")" &&
-        rm -rf ~/.emacs.d &&
-        ln -s ~/.config/emacs ~/.emacs.d &&
-        [ -f "$EMACSDIR/init.el" ] &&
-        emacs --no-site-file --batch --eval "(require 'init \"$EMACSDIR/init.el\")" &&
-        [ -d "$EMACSDIR/straight/repos/otp" ] &&
-        [ ! -L "$EMACSDIR/straight/repos/otp" ] &&
-        mkdir -p ~/git &&
-        rm -rf ~/git/otp &&
-        mv "$EMACSDIR/straight/repos/otp" ~/git &&
-        ln -s ~/git/otp "$EMACSDIR/straight/repos" &&
-        echo "installed emacs"
 fi
