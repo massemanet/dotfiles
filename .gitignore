@@ -78,6 +78,7 @@ foo*
 /bin/rebar3
 /bin/docker-credential-*
 /bin/kubectl-*
+/bin/bazel*
 
 .DS_Store
 /Desktop/
