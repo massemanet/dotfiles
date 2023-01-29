@@ -2,13 +2,13 @@
 
 set -euo pipefail
 
-usage() {
-    echo "$0 TARGET [VSN]"
-    err ""
+_usage() {
+    echo "$(basename "$0") TARGET [VSN]"
+    exit 0
 }
 
-err() {
-    echo "$1"
+_err() {
+    echo "${1:-}"
     exit 1
 }
 
@@ -56,9 +56,9 @@ get-emacs() {
 get-erlang() {
     local VSN="${1:-25}"
 
-    command -v make > /dev/null || err "install 'make'"
-    command -v automake > /dev/null || err "install 'automake'"
-    command -v autoconf > /dev/null || err "install 'autoconf'"
+    command -v make > /dev/null || _err "install 'make'"
+    command -v automake > /dev/null || _err "install 'automake'"
+    command -v autoconf > /dev/null || _err "install 'autoconf'"
 
     sudo apt-get update &&
         sudo apt-get install -yq --no-install-recommends \
@@ -110,16 +110,30 @@ get-go() {
     sudo tar -C /usr/local -xzf /tmp/$$.tgz
 }
 
-get-rebar() {
-    local VSN="${1:-}"
+_get-github () {
+    local ORG="$1"
+    local PROJ="$2"
+    local BIN="$3"
+    local VSN="${4:-v?[0-9\.]+}"
+    local TARG="${5:-/usr/local/bin}"
 
-    local DLPAGE="https://github.com/erlang/rebar3/releases"
-    local RE="download/[0-9\\.]+/rebar3"
-    r="$(curl -sL "$DLPAGE" | grep -oE "$RE" | grep "$VSN" | sort -uV | tail -n1)"
-    [ -z "$r" ] && err "no file at $DLPAGE."
-    echo "found file: $r"
-    curl -sL "$DLPAGE/$r" -o /tmp/rebar3
-    sudo install /tmp/rebar3 /usr/local/bin
+    local RE="$ORG/$PROJ/releases/tag/$VSN"
+    local DLPAGE="https://github.com/$ORG/$PROJ"
+    VSN="$(curl -sL "$DLPAGE"/tags | grep -Eo "$RE" | grep -Eo "$VSN" | sort -Vru | head -n1)"
+    [ -z "$VSN" ] && _err "no file at $DLPAGE."
+    echo "found file: $VSN"
+    curl -sL "$DLPAGE/releases/download/$VSN/$PROJ$BIN" -o "/tmp/$PROJ"
+    sudo install "/tmp/$PROJ" "$TARG"
+    echo "installed $PROJ::$VSN in $TARG"
+}
+
+get-bazelisk() {
+    _get-github "bazelbuild" "bazelisk" "-linux-amd64" "${1:-}"
+    rm -f ~/bin/bazel && ln -s /usr/local/bin/bazelisk ~/bin/bazel
+}
+
+get-rebar() {
+    _get-github "erlang" "rebar3" "" "${1:-}"
 }
 
 get-rust() {
@@ -128,8 +142,8 @@ get-rust() {
     /tmp/rust.sh --no-modify-path -y -q
 }
 
+[ -z "${1:-}" ] && _usage
 sudo true
-[ -z "$1" ] && usage
 TRG="$1"
 VSN="${2:-}"
 echo "## $TRG:$VSN ##################################################################"
