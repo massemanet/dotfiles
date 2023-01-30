@@ -41,6 +41,10 @@ _get-github () {
 
 #######################################################
 
+get-gopass() {
+    _apt_install gopass
+}
+
 get-docker-cred() {
     local GH="https://github.com/docker/docker-credential-helpers/releases"
     local RE="download/v[0-9\\.]+/docker-credential-pass-v[0-9\\.]+-amd64.tar.gz"
