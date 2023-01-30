@@ -152,7 +152,8 @@ _get-github () {
 
 get-awscli() {
     sudo apt-get install -y awscli &&
-        sudo cp "$(command -v aws_completer)" /etc/bash_completion.d/
+        echo "awscli."
+##        sudo cp "$(command -v aws_completer)" /etc/bash_completion.d/
 }
 
 get-aws-vault() {
