@@ -12,23 +12,39 @@ _err() {
     exit 1
 }
 
-get-docker() {
-    local r s
+_elisp() {
+    [ -z "${1:-}" ] && _err "Provide elisp."
+    2>&1 emacs --no-site-file --batch --eval "$1"
+}
 
-    B="https://download.docker.com/linux/debian/dists/buster/pool/test/amd64"
-    r="$(curl -sSL "$B")"
-    for s in containerd.io docker-ce-cli docker-ce
-    do RE="${s}_[^_]*_amd64.deb"
-       S="$(echo "$r" | grep -Eo "$RE" | sort -urV | head -n 1)"
-       echo "$S"
-       curl -sSL "$B/$S" > /tmp/$$
-       sudo dpkg -i /tmp/$$
-    done
+_apt_install() {
+    sudo apt-get update &&
+        sudo apt-get install -yq --no-install-recommends "$@"
+}
 
-    groups | grep docker || sudo adduser "$USER" docker
+_get-github () {
+    local ORG="$1"
+    local PROJ="$2"
+    local BIN="$3"
+    local VSN="${4:-v?[0-9\.]+}"
+    local TARG="${5:-/usr/local/bin}"
 
+    local RE="$ORG/$PROJ/releases/tag/$VSN"
+    local DLPAGE="https://github.com/$ORG/$PROJ"
+    VSN="$(curl -sL "$DLPAGE"/tags | grep -Eo "$RE" | grep -Eo "$VSN" | sort -Vru | head -n1)"
+    [ -z "$VSN" ] && _err "no file at $DLPAGE."
+    echo "found file: $VSN"
+    curl -sL "$DLPAGE/releases/download/$VSN/$PROJ$BIN" -o "/tmp/$PROJ"
+    sudo install "/tmp/$PROJ" "$TARG"
+    echo "installed $PROJ::$VSN in $TARG"
+}
+
+#######################################################
+
+get-docker-cred() {
     local GH="https://github.com/docker/docker-credential-helpers/releases"
     local RE="download/v[0-9\\.]+/docker-credential-pass-v[0-9\\.]+-amd64.tar.gz"
+    local GH=https://github.com/docker/docker-credential-helpers/releases/download/v0.7.0/docker-credential-pass-v0.7.0.linux-amd64
     r="$(curl -sSL "$GH" | grep -Eo "$RE" | grep "$VSN" | sort -Vu | tail -n1)"
     echo "found file $r"
     curl -sSL "$GH/$r" > /tmp/docker_cred_helper.tgz
@@ -41,15 +57,9 @@ get-docker() {
     (cd ~/bin; ln -s ../pet/docker/docker-credential-pass . ; cd ~/.docker ; ln -s ../pet/docker/config.json .)
 }
 
-
-_elisp() {
-    [ -z "${1:-}" ] && _err "Provide elisp."
-    2>&1 emacs --no-site-file --batch --eval "$1"
-}
-
 # init emacs
 get-emacs() {
-    command -v emacs || sudo apt-get install -y emacs-nox
+    command -v emacs || _apt_install emacs-nox
     EMACSDIR="$(eval readlink -f "$(_elisp "(message user-emacs-directory)")")" &&
         rm -rf ~/.emacs.d &&
         ln -s ~/.config/emacs ~/.emacs.d &&
@@ -83,22 +93,21 @@ get-erlang() {
     command -v automake > /dev/null || _err "install 'automake'"
     command -v autoconf > /dev/null || _err "install 'autoconf'"
 
-    sudo apt-get update &&
-        sudo apt-get install -yq --no-install-recommends \
-             autoconf \
-             build-essential \
-             ca-certificates \
-             liblttng-ust-dev \
-             liblttng-ust0 \
-             libncurses-dev \
-             libpcap-dev \
-             libpcap0.8 \
-             libsctp-dev \
-             libsctp1 \
-             libssl-dev \
-             libssl1.1 \
-             lksctp-tools \
-             make
+    _apt_install \
+        autoconf \
+        build-essential \
+        ca-certificates \
+        liblttng-ust-dev \
+        liblttng-ust0 \
+        libncurses-dev \
+        libpcap-dev \
+        libpcap0.8 \
+        libsctp-dev \
+        libsctp1 \
+        libssl-dev \
+        libssl1.1 \
+        lksctp-tools \
+        make
     [ -d ~/git/otp ] || git clone --depth=1 https://github.com/erlang/otp.git ~/git/otp
     cd ~/git/otp/
     git remote set-branches origin 'maint-*'
@@ -118,8 +127,7 @@ get_et() {
     URL="https://mistertea.github.io/debian-et"
     echo "$URL/debian-source/ bullseye main" | sudo tee /etc/apt/sources.list.d/et.list
     curl -sS "$URL//et.gpg" | sudo apt-key add -
-    sudo apt update && \
-        sudo apt install -y et
+    _apt_install et
 }
 
 get-go() {
@@ -133,27 +141,17 @@ get-go() {
     sudo tar -C /usr/local -xzf /tmp/$$.tgz
 }
 
-_get-github () {
-    local ORG="$1"
-    local PROJ="$2"
-    local BIN="$3"
-    local VSN="${4:-v?[0-9\.]+}"
-    local TARG="${5:-/usr/local/bin}"
-
-    local RE="$ORG/$PROJ/releases/tag/$VSN"
-    local DLPAGE="https://github.com/$ORG/$PROJ"
-    VSN="$(curl -sL "$DLPAGE"/tags | grep -Eo "$RE" | grep -Eo "$VSN" | sort -Vru | head -n1)"
-    [ -z "$VSN" ] && _err "no file at $DLPAGE."
-    echo "found file: $VSN"
-    curl -sL "$DLPAGE/releases/download/$VSN/$PROJ$BIN" -o "/tmp/$PROJ"
-    sudo install "/tmp/$PROJ" "$TARG"
-    echo "installed $PROJ::$VSN in $TARG"
+get-docker() {
+    local AUSER="$USER"
+    _apt_install docker.io &&
+        sudo adduser "$AUSER" docker
+    echo "installed docker"
 }
 
 get-awscli() {
-    sudo apt-get install -y awscli &&
-        echo "awscli."
-##        sudo cp "$(command -v aws_completer)" /etc/bash_completion.d/
+    ## in EC2, the completer is built in. see "$(command -v aws_completer)"
+    _apt_install awscli
+    echo "awscli."
 }
 
 get-aws-vault() {
@@ -174,13 +172,12 @@ get-kubectl() {
     local APTKEY=https://packages.cloud.google.com/apt/doc/apt-key.gpg
     local REPO=https://apt.kubernetes.io/
     local LIST=/etc/apt/sources.list.d/kubernetes.list
-    sudo apt-get install -y ca-certificates curl &&
+    _apt_install ca-certificates curl &&
         sudo mkdir -p /etc/apt/keyrings &&
         sudo curl -fsSLo "$KEYRING" "$APTKEY" &&
         echo "deb [signed-by=$KEYRING] $REPO kubernetes-xenial main" | sudo tee "$LIST" &&
         sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B53DC80D13EDEF05 &&
-        sudo apt-get update &&
-        sudo apt-get install -y kubectl &&
+        apt_install kubectl &&
         kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl-complete > /dev/null
 }
 

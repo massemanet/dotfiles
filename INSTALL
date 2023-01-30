@@ -77,7 +77,8 @@ sudo apt-get update &&
          shellcheck socat strace sysstat \
          tcpdump texinfo texlive-latex-recommended traceroute tree \
          unzip \
-         whois
+         whois \
+         zip
 
 # get user stuff
 if [ "$USER" = "$AUSER" ]; then
