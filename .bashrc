@@ -27,9 +27,10 @@ export GIT_PS1_SHOWDIRTYSTATE=true
 export GIT_PS1
 export LAST_EXIT
 export SSHID
-export PROMPT_COMMAND='_prompt LAST_EXIT; _prompt history; _prompt GIT_PS1; _prompt SSHID'
+export PROMPT_COMMAND='_prompt LAST_EXIT; _prompt history; _prompt GIT_PS1; _prompt SSHID; _prompt K8SCTX'
 
 PS1='\[\e[33m\]\h'
+PS1+='\[\e[32m\]${K8SCTX:+<${K8SCTX}>}'
 PS1+='\[\e[36m\]${SSHID:+[${SSHID}]}'
 PS1+='\[\e[35m\]($GIT_PS1)'
 PS1+='\[\e[32m\]${LAST_EXIT:+\[\e[31m\]($LAST_EXIT)}$'
@@ -73,6 +74,7 @@ _prompt() {
         LAST_EXIT) LAST_EXIT=$?; [ $LAST_EXIT == 0 ] && unset LAST_EXIT;;
         GIT_PS1)   GIT_PS1="$(_gitps1)";;
         SSHID)     SSHID="$(~/bin/sshid.sh)" || unset SSHID;;
+        K8SCTX)    K8SCTX="$(~/bin/k8sctx.sh)" || unset K8SCTX;;
         history)   history -a;;
     esac
 }
