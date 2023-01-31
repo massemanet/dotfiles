@@ -127,10 +127,13 @@ get-erlang() {
     sudo make install
 }
 
-get_et() {
-    URL="https://mistertea.github.io/debian-et"
-    echo "$URL/debian-source/ bullseye main" | sudo tee /etc/apt/sources.list.d/et.list
-    curl -sS "$URL//et.gpg" | sudo apt-key add -
+get-et() {
+    if grep -q Ubuntu /etc/lsb-release
+    then sudo add-apt-repository ppa:jgmath2000/et
+    else URL="https://mistertea.github.io/debian-et"
+         echo "deb $URL/debian-source/ bullseye main" | sudo tee /etc/apt/sources.list.d/et.list
+         curl -sS "$URL/et.gpg" | sudo apt-key add -
+    fi
     _apt_install et
 }
 
@@ -147,7 +150,7 @@ get-go() {
 
 get-docker() {
     local AUSER="$USER"
-    _apt_install docker.io &&
+    _apt_install docker.io docker-compose &&
         sudo adduser "$AUSER" docker
     echo "installed docker"
 }

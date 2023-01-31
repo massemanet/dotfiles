@@ -13,6 +13,13 @@ _show() {
     kubectl config current-context | grep -Eo '\-[a-z]*\.[a-z]*' | tr -d "-"
 }
 
+_starlet() {
+    if [ -z "${1:-}" ]
+    then kubectl get pods
+    else kubectl exec -it "$1" -c starlet -- bin/starlet remote_console
+    fi
+}
+
 _set() {
     local CONTEXT
     CONTEXT="$(_context "$1")"
@@ -23,6 +30,7 @@ _set() {
 }
 
 case "${1:-}" in
-    "") _show;;
-    *)  _set "$1";;
+    "erl") _starlet "${2:-}" ;;
+    "")    _show ;;
+    *)     _set "$1" ;;
 esac

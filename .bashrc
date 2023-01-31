@@ -74,7 +74,7 @@ _prompt() {
         LAST_EXIT) LAST_EXIT=$?; [ $LAST_EXIT == 0 ] && unset LAST_EXIT;;
         GIT_PS1)   GIT_PS1="$(_gitps1)";;
         SSHID)     SSHID="$(~/bin/sshid.sh)" || unset SSHID;;
-        K8SCTX)    K8SCTX="$(~/bin/k8sctx.sh)" || unset K8SCTX;;
+        K8SCTX)    K8SCTX="$(~/bin/k8s)" || unset K8SCTX;;
         history)   history -a;;
     esac
 }
