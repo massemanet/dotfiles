@@ -18,8 +18,6 @@ shopt -s checkwinsize
 # pretty colors
 export LS_COLORS="di=36:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:or=30;41:mi=30;46"
 
-[ -f "$HOME/WG2.sh" ] && . "$HOME"/WG2.sh
-
 # PS1
 export GIT_PS1_SHOWSTASHSTATE=true
 export GIT_PS1_SHOWUNTRACKEDFILES=true

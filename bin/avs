@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+_usage() {
+    local PROG; PROG=$(basename "$0")
+    cat <<HERE
+$PROG PROFILE SERVICE CMD
+
+Runs an aws command in a profile
+
+Example: $PROG prod s3 ls
+HERE
+    exit 0
+}
+
+_err() {
+    echo "${1:-}"
+    exit 1
+}
+
+export AWS_VAULT_BACKEND=pass
+export AWS_VAULT_PASS_PREFIX=aws-vault
+export GPG_TTY
+GPG_TTY="$(tty)"
+
+[ -z "${1:-}" ] && _usage
+[ -z "${2:-}" ] && _usage
+[ -z "${3:-}" ] && _usage
+
+C="$1"
+shift
+aws-vault exec "$C" aws "$@"

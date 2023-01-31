@@ -10,8 +10,3 @@ command -v aws-vault || ~/bin/install.sh aws-vault
 command -v gopass    || ~/bin/install.sh gopass
 command -v pass      || ~/bin/install.sh pass
 command -v docker    || ~/bin/install.sh docker
-
-export AWS_VAULT_BACKEND=pass
-export AWS_VAULT_PASS_PREFIX=aws-vault
-export GPG_TTY
-GPG_TTY="$(tty)"
