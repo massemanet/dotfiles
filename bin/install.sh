@@ -45,6 +45,14 @@ get-gopass() {
     _apt_install gopass
 }
 
+get-tshark() {
+    local ALLOW_SETUID="wireshark-common  wireshark-common/install-setuid  boolean  true"
+    _apt_install debconf-utils
+    echo "$ALLOW_SETUID" | sudo debconf-set-selections -v
+    _apt_install tshark
+    sudo adduser "$USER" wireshark
+}
+
 get-docker-cred() {
     local GH="https://github.com/docker/docker-credential-helpers/releases"
     local RE="download/v[0-9\\.]+/docker-credential-pass-v[0-9\\.]+-amd64.tar.gz"
@@ -146,6 +154,24 @@ get-go() {
     echo "found $TGZ"
     curl -sSL "$DL/$TGZ" > /tmp/$$.tgz
     sudo tar -C /usr/local -xzf /tmp/$$.tgz
+}
+
+get-skopeo() {
+    local GOPATH="${GOPATH:-/tmp}"
+    local URL="github.com/containers/skopeo"
+    local SKOP="$GOPATH"/src/"$URL"
+
+    git clone https://"$URL" "$SKOP"
+    cd "$SKOP"
+    make bin/skopeo
+    mkdir -p "$HOME"/.config/containers
+    cp "$SKOP"/default-policy.json "$HOME"/.config/containers/policy.json
+    cp bin/skopeo ~/bin/
+}
+
+ get-pre-commit() {
+    _apt_install python3-pip
+    pip install pre-commit
 }
 
 get-docker() {

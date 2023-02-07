@@ -30,7 +30,6 @@ _set() {
 }
 
 case "${1:-}" in
-    "erl") _starlet "${2:-}" ;;
     "")    _show ;;
-    *)     _set "$1" ;;
+    *)     _set "$1" ; [ -n "${2:-}" ] && _starlet "$2" ;;
 esac

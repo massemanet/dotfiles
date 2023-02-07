@@ -10,3 +10,4 @@ command -v aws-vault || ~/bin/install.sh aws-vault
 command -v gopass    || ~/bin/install.sh gopass
 command -v pass      || ~/bin/install.sh pass
 command -v docker    || ~/bin/install.sh docker
+command -v tshark    || ~/bin/install.sh tshark
