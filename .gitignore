@@ -79,6 +79,7 @@ foo*
 /bin/docker-credential-*
 /bin/kubectl-*
 /bin/bazel*
+/bin/skopeo
 
 .DS_Store
 /Desktop/
