@@ -7,6 +7,7 @@
 -author('Mats Cronqvist').
 
 -export([ineti/0,
+         lift/1,
 	 sig/1, sig/2, sig/3,
 	 print_source/1,
 	 ports/0,
@@ -33,6 +34,9 @@ export_all(M) ->
       code:soft_purge(M),
       code:load_binary(M, F, B)
   end.
+
+lift({ok, X}) ->
+    X.
 
 lm() ->
   MD5File =
