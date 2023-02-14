@@ -1,5 +1,21 @@
 #!/usr/bin/env bash
 
+_usg() {
+    cat <<HERE
+$(basename "$0") [cmd]:
+ show:       show current context
+ set <ctx>:  set context
+ pods:       show list of pods
+ bash [pod]: open bash shell on <pod>, or a random starlet worker
+ erl [pod]:  open erl shell on <pod>, or a random starlet worker
+HERE
+}
+
+_usage() {
+    _usg
+    exit 0
+}
+
 _context() {
     local CLUSTER CONTEXT
     CLUSTER="$(kubectl config get-clusters | grep "${1:-}")" &&
@@ -13,11 +29,21 @@ _show() {
     kubectl config current-context | grep -Eo '\-[a-z]*\.[a-z]*' | tr -d "-"
 }
 
+_pods() {
+    kubectl get pods
+}
+
+_pod() {
+    local P=${1:-starlet-worker-main}
+    kubectl get pods | grep "$P" | head -n1 | cut -f1 -d" "
+}
+
 _starlet() {
-    if [ -z "${1:-}" ]
-    then kubectl get pods
-    else kubectl exec -it "$1" -c starlet -- bin/starlet remote_console
-    fi
+    kubectl exec -it "$(_pod "${1:-}")" -c starlet -- bin/starlet remote_console
+}
+
+_bash() {
+    kubectl exec -it "$(_pod "${1:-}")" -c starlet -- /usr/bin/bash
 }
 
 _set() {
@@ -30,6 +56,10 @@ _set() {
 }
 
 case "${1:-}" in
-    "")    _show ;;
-    *)     _set "$1" ; [ -n "${2:-}" ] && _starlet "$2" ;;
+    ""|show) _show ;;
+    "pods")  _pods;;
+    "bash")  _bash "${2:-}";;
+    "erl")   _starlet "${2:-}";;
+    "set")   [ -n "${2:-}" ] && _set "$2";;
+    *) _usage;;
 esac
