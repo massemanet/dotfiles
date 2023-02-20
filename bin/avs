@@ -6,10 +6,14 @@ _usage() {
     local PROG; PROG=$(basename "$0")
     cat <<HERE
 $PROG PROFILE SERVICE CMD
+$PROG --list
 
-Runs an aws command in a profile
+Runs an aws command in a profile, or list profiles.
 
-Example: $PROG prod s3 ls
+Examples:
+ $PROG prod s3 ls
+
+ $PROG --list
 HERE
     exit 0
 }
@@ -25,9 +29,11 @@ export GPG_TTY
 GPG_TTY="$(tty)"
 
 [ -z "${1:-}" ] && _usage
+
+[[ "$1" = "--list" ]] && aws-vault list && exit 0
+
 [ -z "${2:-}" ] && _usage
 [ -z "${3:-}" ] && _usage
-
 C="$1"
 shift
 aws-vault exec "$C" aws "$@"
