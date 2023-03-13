@@ -12,7 +12,3 @@ GPG_TTY="$(tty)"
 >/dev/null command -v gopass    || ~/bin/install.sh gopass
 >/dev/null command -v pass      || ~/bin/install.sh pass
 >/dev/null command -v docker    || ~/bin/install.sh docker
->/dev/null command -v emacs     || ~/bin/install.sh emacs
->/dev/null command -v erl       || ~/bin/install.sh erlang
->/dev/null command -v rebar3    || ~/bin/install.sh rebar
->/dev/null command -v tshark    || ~/bin/install.sh tshark

@@ -26,7 +26,10 @@ _context() {
 }
 
 _show() {
-    kubectl config current-context | grep -Eo '\-[a-z]*\.[a-z]*' | tr -d "-"
+    local CTX
+    CTX="$(2>&1 kubectl config current-context)" &&
+        [[ "$CTX" != error:* ]] &&
+        grep -Eo '\-[a-z]*\.[a-z]*' <<<"$CTX" | tr -d "-"
 }
 
 _pods() {
@@ -54,6 +57,8 @@ _set() {
     else kubectl config use-context "$CONTEXT"
     fi
 }
+
+[ -z "$(command -v kubectl)" ] && exit 1
 
 case "${1:-}" in
     ""|show) _show ;;

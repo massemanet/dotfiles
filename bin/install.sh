@@ -45,6 +45,14 @@ get-gopass() {
     _apt_install gopass
 }
 
+get-pass() {
+    _apt_install pass
+}
+
+get-pandoc() {
+    _apt_install pandoc texlive-latex-recommended
+}
+
 get-tshark() {
     local ALLOW_SETUID="wireshark-common  wireshark-common/install-setuid  boolean  true"
     _apt_install debconf-utils
@@ -210,7 +218,7 @@ get-kubectl() {
         sudo curl -fsSLo "$KEYRING" "$APTKEY" &&
         echo "deb [signed-by=$KEYRING] $REPO kubernetes-xenial main" | sudo tee "$LIST" &&
         sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B53DC80D13EDEF05 &&
-        apt_install kubectl &&
+        _apt_install kubectl &&
         kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl-complete > /dev/null
 }
 

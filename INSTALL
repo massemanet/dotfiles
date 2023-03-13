@@ -73,9 +73,9 @@ sudo apt-get update &&
          lksctp-tools lsof \
          make \
          ncdu netcat-traditional \
-         pandoc python-is-python3 \
+         python-is-python3 \
          shellcheck socat strace sysstat \
-         tcpdump texinfo texlive-latex-recommended traceroute tree \
+         tcpdump traceroute tree \
          unzip \
          whois \
          zip
