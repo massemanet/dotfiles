@@ -62,7 +62,7 @@ _to_file() {
 _show() {
     local ID IDs=""
 
-    if is="$(ssh-add -l | cut -f3 -d" ")"
+    if is="$(2>/dev/null ssh-add -l | cut -f3 -d" ")"
     then for i in $is
          do ID="$(_to_id "$i")"
             if [ -z "$IDs" ]
