@@ -77,15 +77,10 @@
  scroll-up-aggressively         0.1)
 
 ;; keybindings
-(global-set-key (kbd "C-j")     `scroll-down)
 (global-set-key (kbd "C-x !")   `shell-command)
-(global-set-key (kbd "C-x %")   `query-replace)
 (global-set-key (kbd "C-x ,")   'beginning-of-buffer)
 (global-set-key (kbd "C-x .")   'end-of-buffer)
 (global-set-key (kbd "C-x ;")   'eval-expression)
-(global-set-key (kbd "C-x C-r") 'revert-buffer)
-(global-set-key (kbd "C-x C-x") 'execute-extended-command)
-(global-set-key (kbd "C-x C-y") `yank-pop)
 (global-set-key (kbd "C-x O")   `switch-to-previous-buffer)
 (global-set-key (kbd "C-x T")   `transpose-words)
 (global-set-key (kbd "C-x [")   'flycheck-previous-error)
@@ -101,7 +96,12 @@
 (global-set-key (kbd "C-x w")   `kill-ring-save)
 (global-set-key (kbd "C-x {")   `previous-error)
 (global-set-key (kbd "C-x }")   `next-error)
+(global-set-key (kbd "C-x C-q") `query-replace)
+(global-set-key (kbd "C-x C-r") 'revert-buffer)
+(global-set-key (kbd "C-x C-x") 'execute-extended-command)
+(global-set-key (kbd "C-x C-y") `yank-pop)
 (global-set-key (kbd "C-z")     'undo) ; be like a mac
+(global-set-key (kbd "C-j")     `scroll-down)
 (global-set-key (kbd "M-z")     'undo) ; if screen eats C-z
 
 (let ((map minibuffer-local-map))
