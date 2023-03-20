@@ -22,7 +22,7 @@ _apt_install() {
         sudo apt-get install -yq --no-install-recommends "$@"
 }
 
-_get-github () {
+_github () {
     local ORG="$1"
     local PROJ="$2"
     local BIN="$3"
@@ -41,24 +41,30 @@ _get-github () {
 
 #######################################################
 
-get-gopass() {
-    _apt_install gopass
+get-awscli() {
+    ## in EC2, the completer is built in. see "$(command -v aws_completer)"
+    _apt_install awscli
+    echo "awscli."
 }
 
-get-pass() {
-    _apt_install pass
+get-aws-vault() {
+    _github "99designs" "aws-vault" "-linux-amd64" "${1:-}"
+    curl -fsSLo https://raw.githubusercontent.com/99designs/aws-vault/v6.6.2/contrib/completions/bash/aws-vault.bash /tmp/aws-vault-complete &&
+        sudo cp /tmp/aws-vault-complete /etc/bash_completion.d/
 }
 
-get-pandoc() {
-    _apt_install pandoc texlive-latex-recommended
+get-bazelisk() {
+    local COMPLETER=~/git/loltel/script/bazel-complete.bash
+    _github "bazelbuild" "bazelisk" "-linux-amd64" "${1:-}"
+    [ -f "$COMPLETER" ] && sudo ln -s "$COMPLETER" /etc/bash_completion.d/
+    rm -f ~/bin/bazel && ln -s /usr/local/bin/bazelisk ~/bin/bazel
 }
 
-get-tshark() {
-    local ALLOW_SETUID="wireshark-common  wireshark-common/install-setuid  boolean  true"
-    _apt_install debconf-utils
-    echo "$ALLOW_SETUID" | sudo debconf-set-selections -v
-    _apt_install tshark
-    sudo adduser "$USER" wireshark
+get-docker() {
+    local AUSER="$USER"
+    _apt_install docker.io docker-compose &&
+        sudo adduser "$AUSER" docker
+    echo "installed docker"
 }
 
 get-docker-cred() {
@@ -79,7 +85,7 @@ get-docker-cred() {
 
 # init emacs
 get-emacs() {
-    command -v emacs || _apt_install emacs-nox
+    command -v emacs || _apt_install emacs-nox aspell-en
     EMACSDIR="$(eval readlink -f "$(_elisp "(message user-emacs-directory)")")" &&
         rm -rf ~/.emacs.d &&
         ln -s ~/.config/emacs ~/.emacs.d &&
@@ -118,14 +124,11 @@ get-erlang() {
         build-essential \
         ca-certificates \
         liblttng-ust-dev \
-        liblttng-ust0 \
         libncurses-dev \
         libpcap-dev \
-        libpcap0.8 \
         libsctp-dev \
         libsctp1 \
         libssl-dev \
-        libssl1.1 \
         lksctp-tools \
         make
     [ -d ~/git/otp ] || git clone --depth=1 https://github.com/erlang/otp.git ~/git/otp
@@ -164,48 +167,8 @@ get-go() {
     sudo tar -C /usr/local -xzf /tmp/$$.tgz
 }
 
-get-skopeo() {
-    local GOPATH="${GOPATH:-/tmp}"
-    local URL="github.com/containers/skopeo"
-    local SKOP="$GOPATH"/src/"$URL"
-
-    git clone https://"$URL" "$SKOP"
-    cd "$SKOP"
-    make bin/skopeo
-    mkdir -p "$HOME"/.config/containers
-    cp "$SKOP"/default-policy.json "$HOME"/.config/containers/policy.json
-    cp bin/skopeo ~/bin/
-}
-
- get-pre-commit() {
-    _apt_install python3-pip
-    pip install pre-commit
-}
-
-get-docker() {
-    local AUSER="$USER"
-    _apt_install docker.io docker-compose &&
-        sudo adduser "$AUSER" docker
-    echo "installed docker"
-}
-
-get-awscli() {
-    ## in EC2, the completer is built in. see "$(command -v aws_completer)"
-    _apt_install awscli
-    echo "awscli."
-}
-
-get-aws-vault() {
-    _get-github "99designs" "aws-vault" "-linux-amd64" "${1:-}"
-    curl -fsSLo https://raw.githubusercontent.com/99designs/aws-vault/v6.6.2/contrib/completions/bash/aws-vault.bash /tmp/aws-vault-complete &&
-        sudo cp /tmp/aws-vault-complete /etc/bash_completion.d/
-}
-
-get-bazelisk() {
-    local COMPLETER=~/git/loltel/script/bazel-complete.bash
-    _get-github "bazelbuild" "bazelisk" "-linux-amd64" "${1:-}"
-    [ -f "$COMPLETER" ] && sudo ln -s "$COMPLETER" /etc/bash_completion.d/
-    rm -f ~/bin/bazel && ln -s /usr/local/bin/bazelisk ~/bin/bazel
+get-gopass() {
+    _apt_install gopass
 }
 
 get-kubectl() {
@@ -222,14 +185,37 @@ get-kubectl() {
         kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl-complete > /dev/null
 }
 
+get-pass() {
+    _apt_install pass
+}
+
+get-pre-commit() {
+    _apt_install python3-pip
+    pip install pre-commit
+}
+
 get-rebar() {
-    _get-github "erlang" "rebar3" "" "${1:-}"
+    get-erlang ""
+    _github "erlang" "rebar3" "" "${1:-}"
 }
 
 get-rust() {
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > /tmp/rust.sh
     chmod +x /tmp/rust.sh
     /tmp/rust.sh --no-modify-path -y -q
+}
+
+get-skopeo() {
+    local GOPATH="${GOPATH:-/tmp}"
+    local URL="github.com/containers/skopeo"
+    local SKOP="$GOPATH"/src/"$URL"
+
+    git clone https://"$URL" "$SKOP"
+    cd "$SKOP"
+    make bin/skopeo
+    mkdir -p "$HOME"/.config/containers
+    cp "$SKOP"/default-policy.json "$HOME"/.config/containers/policy.json
+    cp bin/skopeo ~/bin/
 }
 
 [ -z "${1:-}" ] && _usage

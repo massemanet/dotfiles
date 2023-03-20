@@ -63,11 +63,10 @@ fi
 sudo apt-get update &&
     sudo apt-get upgrade -y &&
     sudo apt-get install --autoremove -y \
-         aspell-en aspell-sv automake \
-         bind9-dnsutils \
+         automake \
+         bash-completion bind9-dnsutils \
          curl \
          deborphan \
-         emacs-nox \
          g++ gdb git \
          jq \
          lksctp-tools lsof \
