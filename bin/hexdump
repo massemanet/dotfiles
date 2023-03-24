@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+od -A d -t x2z -v "$@"

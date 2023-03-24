@@ -111,19 +111,14 @@ get-emacs-wayland() {
     sudo make install
 }
 
-# install erlang + rebar + redbug
+# install erlang
 get-erlang() {
     local VSN="${1:-25}"
-
-    command -v make > /dev/null || _err "install 'make'"
-    command -v automake > /dev/null || _err "install 'automake'"
-    command -v autoconf > /dev/null || _err "install 'autoconf'"
 
     _apt_install \
         autoconf \
         build-essential \
         ca-certificates \
-        liblttng-ust-dev \
         libncurses-dev \
         libpcap-dev \
         libsctp-dev \
@@ -139,8 +134,21 @@ get-erlang() {
     git pull --depth=1 --ff-only
     git clean -fdx
     ./configure \
-        --without-javac --without-jinterface --without-odbc --without-megaco \
-        --with-dynamic-trace=lttng --enable-hipe --enable-sctp=lib \
+        --without-debugger \
+        --without-eldap \
+        --without-et \
+        --without-javac \
+        --without-jinterface \
+        --without-megaco \
+        --without-observer \
+        --without-odbc \
+        --without-snmp \
+        --without-tftp \
+        --without-wx \
+        --without-xmerl \
+        --without-dynamic-trace \
+        --enable-hipe \
+        --enable-sctp=lib \
         --enable-lock-counter
     make -j4
     sudo make install
@@ -216,6 +224,11 @@ get-skopeo() {
     mkdir -p "$HOME"/.config/containers
     cp "$SKOP"/default-policy.json "$HOME"/.config/containers/policy.json
     cp bin/skopeo ~/bin/
+}
+
+get-tshark() {
+    _apt_install tshark
+    sudo adduser "$USER" wireshark
 }
 
 [ -z "${1:-}" ] && _usage
