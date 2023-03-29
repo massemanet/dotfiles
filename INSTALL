@@ -30,6 +30,8 @@ grep "sudo:" /etc/group || _err "no sudo group."
 
 # add our user
 AUSER=masse
+
+# create a little script
 ADDUSER=$(cat <<HERE
 adduser "$AUSER" &&
 adduser "$AUSER" sudo &&
@@ -47,13 +49,27 @@ then if [ "$USER" = "root" ]
      fi
 fi
 
+# here we should be the user
 [ "$USER" = "$AUSER" ] || _err "Log in as $AUSER"
 
+# sudoer check
+if grep "sudo:" /etc/group | grep "$USER"
+then if grep sudo <(groups)
+     then echo "you're a sudoer. congrats."
+     else _err "You're a sudoer, but you need to log out to make it bite."
+     fi
+else
+    _err "You're not a sudoer. Fix by doing 'adduser \$USER sudo' as root."
+fi
+
+# fix motd
+rm -f /etc/motd
 if [ -d /etc/update-motd.d ]
 then sudo rm /etc/update-motd.d/*
      sudo tee /etc/update-motd.d/00-motd <<HERE
 #!/usr/bin/env sh
 uname -a
+timedatectl
 HERE
      sudo chmod 755 /etc/update-motd.d/00-motd
      echo "motd fixup"
@@ -72,12 +88,15 @@ sudo apt-get update &&
          lksctp-tools lsof \
          make \
          ncdu netcat-traditional \
+         openssh-server \
          python-is-python3 \
-         shellcheck socat strace sysstat \
+         shellcheck socat strace sysstat systemd-timesyncd \
          tcpdump traceroute tree \
          unzip \
          whois \
          zip
+
+timedatectl
 
 # get user stuff
 if [ "$USER" = "$AUSER" ]; then

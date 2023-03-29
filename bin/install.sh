@@ -58,6 +58,7 @@ get-bazelisk() {
     _github "bazelbuild" "bazelisk" "-linux-amd64" "${1:-}"
     [ -f "$COMPLETER" ] && sudo ln -s "$COMPLETER" /etc/bash_completion.d/
     rm -f ~/bin/bazel && ln -s /usr/local/bin/bazelisk ~/bin/bazel
+    cat > ~/.bazelrc <<<"build --disk_cache=/tmp/bazel"
 }
 
 get-docker() {
