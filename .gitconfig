@@ -15,7 +15,7 @@
   lol = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
   pushf = push --force-with-lease
   poke-concourse = commit --allow-empty -m'poke concourse'
-  sync = "! git fetch --prune && git pull --ff-only && for b in $(git branch -vv | grep ': gone]' | awk '{print $1}') ; do git branch -D $b ; done"
+  sync = "! git fetch --prune && git pull --ff-only && for b in $(git branch -vv | grep ': gone]' | awk '{print $1}') ; do git branch -D $b ; done && git status | grep 'Your branch is ahead' && git push || true"
   alias = "! git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /'"
   pushu = "! git push -u origin $(git branch -a | awk '/\\*/{print $2}')"
 
