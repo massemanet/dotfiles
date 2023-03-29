@@ -14,6 +14,7 @@ foo*
 /.awsvault/
 /.bash_history
 /.bash_logout
+/.bazelrc
 /.cache/
 /.cargo/
 /.cask/
