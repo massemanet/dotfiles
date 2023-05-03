@@ -6,23 +6,57 @@
 -module('user_default').
 -author('Mats Cronqvist').
 
--export([ineti/0,
-         lift/1,
-	 sig/1, sig/2, sig/3,
-	 print_source/1,
-	 ports/0,
-	 export_all/1,
-	 tab/0,
-	 flat/1, dump/1,
-	 e/2,
-	 kill/1,
-	 pi/1, pi/2,
-	 os/1,
-	 scatter/0, scatter/1, scatter/2, scatter/3, scatter/4,
-	 callstack/1,
-	 bt/1,   %% foo
-	 pid/1,
-	 lm/0]).
+-export([add_path/1,
+         bt/1,
+         callstack/1,
+         e/2,
+         export_all/1,
+         flat/1, dump/1,
+         hex/1,
+         ineti/0,
+         kill/1,
+         lift/1, lift/2,
+         lm/0,
+         os/1,
+         pi/1, pi/2,
+         pid/1,
+         ports/0,
+         print_source/1,
+         sig/1, sig/2, sig/3,
+         tab/0]).
+
+add_path(M) ->
+    Home = case os:getenv("HOME") of
+               false -> lift(ok, file:get_cwd());
+               H -> H
+           end,
+    C = filename:join([Home, git, M, "_build/default/lib", M, ebin]),
+    case filelib:wildcard(C) of
+        [] -> not_found;
+        [P|_] -> case lists:member(P, code:get_path()) of
+                     true -> loaded;
+                     false -> code:add_patha(P),
+                              c:l(M)
+                 end
+    end.
+
+lift({_, Term}) -> Term;
+lift(Term) -> error({badlift, {not_2tuple, Term}}).
+
+lift(Tag, {Tag, Term}) -> Term;
+lift(Tag, {Tg, _}) -> error({badlift, {tag_mismatch, {Tag, Tg}}});
+lift(_, Term) -> lift(Term).
+
+hex(0) ->
+    "0";
+hex(Int) when is_integer(Int), Int < 0 ->
+    [$-|hex(-Int)];
+hex(Int) when is_integer(Int) ->
+    Sz = ceil(math:log2(Int+1)),
+    hex(<<Int:Sz>>);
+hex(Bits) when is_bitstring(Bits) ->
+    Pad = 3 - ((bit_size(Bits) + 3) rem 4),
+    [if I < 10 -> I+$0; true -> I+$7 end || <<I:4>> <= <<0:Pad, Bits/bitstring>>].
 
 %% recompiles M with export_all without access to the source.
 export_all(M) ->
@@ -35,20 +69,17 @@ export_all(M) ->
       code:load_binary(M, F, B)
   end.
 
-lift({ok, X}) ->
-    X.
-
 lm() ->
   MD5File =
     fun(F) ->
-	case F of
-	  preloaded -> dont_load;
-	  _ ->
-	    case beam_lib:md5(F) of
-	      {ok, {_, MD5}} -> MD5;
-	      _ -> dont_load
-	    end
-	end
+        case F of
+          preloaded -> dont_load;
+          _ ->
+            case beam_lib:md5(F) of
+              {ok, {_, MD5}} -> MD5;
+              _ -> dont_load
+            end
+        end
     end,
 
   MD5Loaded =
@@ -61,20 +92,20 @@ lm() ->
 
   Loadp =
     fun(M, F) ->
-	Loaded = MD5Loaded(M),
-	File = MD5File(F),
-	Loaded =/= dont_load andalso
-	  File =/= dont_load andalso
-	  Loaded =/= File
+        Loaded = MD5Loaded(M),
+        File = MD5File(F),
+        Loaded =/= dont_load andalso
+          File =/= dont_load andalso
+          Loaded =/= File
     end,
 
   Load =
     fun(M, "") ->
-	{cannot_load, M};
+        {cannot_load, M};
        (M, F) ->
-	code:purge(M),
-	{module, M} = code:load_abs(filename:rootname(F, ".beam")),
-	M
+        code:purge(M),
+        {module, M} = code:load_abs(filename:rootname(F, ".beam")),
+        M
     end,
 
   [Load(M, F) || {M, F} <- code:all_loaded(), Loadp(M, F)].
@@ -94,44 +125,6 @@ dump(Term)->
   try wr(FD, "~p.~n", Term), File
   after file:close(FD)
   end.
-
-scatter() ->
-    scatter(fun(X, Y) -> 1/(1+math:exp(X-Y)) end).
-
-scatter(F) ->
-    scatter(F, 5).
-
-scatter(F, CS) ->
-    scatter(F, CS, {-1, 1, 12}).
-
-scatter(F, CS, D) ->
-    scatter(F, CS, D, D).
-
-scatter(Fun, CellSize, {Xmin, Xmax, Xsteps}, {Ymin, Ymax, Ysteps}) ->
-    %% the "data model"
-    S = fun(Min, Max, Steps) -> lists:map(fun(I) -> {I+1, Min+(I-1)*(Max-Min)/(Steps-1)} end, lists:seq(1, Steps)) end,
-    XS = fun() -> S(Xmin, Xmax, Xsteps) end,
-    YS = fun() -> S(Ymin, Ymax, Ysteps) end,
-    VALS = fun(IVs) -> [V || {_, V} <- IVs] end,
-    %% the canvas; a N+1 by M+1 matrix
-    IXS = fun(C) -> lists:seq(1, tuple_size(element(1, C))) end,
-    IYS = fun(C) -> lists:seq(1, tuple_size(C)) end,
-    PEEK = fun(X, Y, C) -> element(X, element(Y, C)) end,
-    POKE = fun(X, Y, V, C) -> setelement(Y, C, setelement(X, element(Y, C), V)) end,
-    CANVAS = fun() -> list_to_tuple(lists:map(fun(Y) -> list_to_tuple([Y|VALS(XS())])  end, [''|VALS(YS())])) end,
-    %% fill the matrix by calling `Fun/2'
-    CELL = fun({{IX, X}, {IY, Y}}, C) -> POKE(IX, IY, Fun(X, Y), C) end,
-    ROW = fun(X, C) -> lists:foldl(CELL, C, lists:map(fun(Y) -> {X, Y} end, YS())) end,
-    FILL = fun(C) -> lists:foldl(ROW, C, XS()) end,
-    %% print. each cell is `CellSize` wide
-    FS = fun(CS, V) -> if is_integer(V) -> [CS, "w"]; is_float(V) -> [CS, ".2f"]; is_atom(V) -> [CS, "s"] end end,
-    FORMAT = fun(V) -> lists:flatten([" ~", FS(integer_to_list(CellSize), V)]) end,
-    EMIT = fun(V) -> io_lib:format(FORMAT(V), [V]) end,
-    LINE = fun(IY, C) -> [lists:map(fun(IX) -> EMIT(PEEK(IX, IY, C)) end, IXS(C)), 10] end,
-    TABLE = fun(C) -> lists:map(fun(IY) -> LINE(IY, C) end, IYS(C)) end,
-    PRINT = fun(C) -> io:fwrite("~s", [TABLE(C)]) end,
-    %% lambda all the way down
-    PRINT(FILL(CANVAS())).
 
 flat(Term) -> flat("~p~n", [Term]).
 flat(Form, List) -> wr("~s", io_lib:format(Form, List)).
@@ -173,12 +166,12 @@ sig_argl(As) ->
 
 sig_arg(A) ->
     case e(1, A) of
-	nil -> "[]";
-	match -> sig_arg(e(3, A))++" = "++sig_arg(e(4, A));
-	cons -> "["++sig_arg(e(3, A))++" | "++sig_arg(e(4, A))++"]";
-	tuple -> "{"++sig_argl(e(3, A))++"}";
-	var -> atom_to_list(e(3, A));
-	_ -> try io_lib:format("~w", [e(3, A)]) catch _:_ -> error({A}) end
+        nil -> "[]";
+        match -> sig_arg(e(3, A))++" = "++sig_arg(e(4, A));
+        cons -> "["++sig_arg(e(3, A))++" | "++sig_arg(e(4, A))++"]";
+        tuple -> "{"++sig_argl(e(3, A))++"}";
+        var -> atom_to_list(e(3, A));
+        _ -> try io_lib:format("~w", [e(3, A)]) catch _:_ -> error({A}) end
     end.
 
 wr(F, E) -> wr(user, F, E).
@@ -210,7 +203,7 @@ ineti(P) ->
       {Rip, Rp} -> {inet_parse:ntoa(Rip), integer_to_list(Rp)}
     end,
   io:fwrite("~15s:~-5w ~15s:~-5s ~7w ~9w ~w/~w~n",
-	    [inet_parse:ntoa(LIP), LPort, RIP, RPort, Type, Status, Sent, Recvd]).
+            [inet_parse:ntoa(LIP), LPort, RIP, RPort, Type, Status, Sent, Recvd]).
 
 ports() ->
   [port_info(P)++PI ||
@@ -224,9 +217,9 @@ port_info(P) ->
   {ok, [{_, Recvd}]} = prim_inet:getstat(P, [recv_oct]),
   {ok, Local} = prim_inet:sockname(P),
   Remote = case prim_inet:peername(P) of
-	     {ok, R} -> R;
-	     {error, R} -> R
-	   end,
+             {ok, R} -> R;
+             {error, R} -> R
+           end,
   [{type, Type}, {status, Status},
    {sent, Sent}, {received, Recvd},
    {local, Local}, {remote, Remote}].
