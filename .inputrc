@@ -7,12 +7,10 @@ set colored-completion-prefix off
 # enable ls-like coloring of directories and executables when listing possibilities for tab-completion.
 set colored-stats off
 
-# make tab-completion case-insensitive
+# make tab-completion case-sensitive
 set completion-ignore-case off
 
 # paste blobs of text without any characters being interpreted as editing commands.
 set enable-bracketed-paste on
 
-"\C-j": "~"
-"\C-\e": "~"
 "\e1": "~"
