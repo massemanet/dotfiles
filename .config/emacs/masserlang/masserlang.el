@@ -4,7 +4,8 @@
 ;;; Code:
 
 (require 'erlang-start)
-(require 'hippierl)
+(when (file-exists-p "~/git/hippierl/hippierl.el")
+  (require 'hippierl "~/git/hippierl/hippierl.el"))
 
 (defun my-shell-mode ()
   "My erlang shell mode bindings."

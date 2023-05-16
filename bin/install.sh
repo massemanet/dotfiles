@@ -148,9 +148,8 @@ get-erlang() {
         --without-wx \
         --without-xmerl \
         --without-dynamic-trace \
-        --enable-hipe \
         --enable-sctp=lib \
-        --enable-lock-counter
+        --disable-lock-counter
     make -j4
     sudo make install
 }

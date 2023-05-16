@@ -99,18 +99,20 @@ sudo apt-get update &&
 timedatectl
 
 # get user stuff
-if [ "$USER" = "$AUSER" ]; then
-    cd ~ || _err "no ~$AUSER"
-    # get dotfiles
-    [ ! -e ~/.git ] &&
-        cd /tmp &&
-        rm -rf dotfiles &&
-        git clone https://git.sr.ht/~massemanet/dotfiles dotfiles &&
-        cd dotfiles &&
-        mv .git ~ &&
-        cd ~ &&
-        git reset --hard &&
-        git checkout server &&
-        chmod 700 .gnupg &&
-        echo "installed dotfiles"
+if [ "$USER" = "$AUSER" ]
+then cd ~ || _err "no ~$AUSER"
+     # get dotfiles
+     if [ ! -e ~/.git ]
+     then cd /tmp &&
+             rm -rf dotfiles &&
+             git clone https://git.sr.ht/~massemanet/dotfiles dotfiles &&
+             cd dotfiles &&
+             mv .git ~ &&
+             cd ~ &&
+             git reset --hard &&
+             git checkout server &&
+             chmod 700 .gnupg &&
+             echo "installed dotfiles"
+     else echo "$USER seems ok."
+     fi
 fi
