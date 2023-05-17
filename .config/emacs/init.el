@@ -94,6 +94,7 @@
 (global-set-key (kbd "C-x t")   `transpose-lines)
 (global-set-key (kbd "C-x v")   `scroll-down)
 (global-set-key (kbd "C-x w")   `kill-ring-save)
+(global-set-key (kbd "C-x x")   'switch-mark-and-point)
 (global-set-key (kbd "C-x {")   `previous-error)
 (global-set-key (kbd "C-x }")   `next-error)
 (global-set-key (kbd "C-x C-q") `query-replace)
@@ -128,6 +129,11 @@
    (set-face-attribute 'ediff-fine-diff-B nil :background "#055505")))
 
 ;; utilities
+(defun switch-mark-and-point ()
+  "Switch mark and point."
+  (interactive)
+  (exchange-point-and-mark t))
+
 (defun set-exec-path ()
   "Set up Emacs' variable `exec-path' and PATH environment variable."
   (interactive)
@@ -165,4 +171,4 @@ Repeated invocations toggle between the two most recently open buffers."
    features))
 
 (provide 'init)
-;;; init ends here
+;;; init.el ends here
