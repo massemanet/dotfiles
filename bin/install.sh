@@ -131,9 +131,7 @@ get-erlang() {
     cd ~/git/otp/
     git remote set-branches origin 'maint-*'
     git fetch -v
-    git co "maint-$VSN"
-    git pull --depth=1 --ff-only
-    git clean -fdx
+    git checkout "origin/maint-$VSN"
     ./configure \
         --without-debugger \
         --without-eldap \
@@ -146,7 +144,6 @@ get-erlang() {
         --without-snmp \
         --without-tftp \
         --without-wx \
-        --without-xmerl \
         --without-dynamic-trace \
         --enable-sctp=lib \
         --disable-lock-counter
@@ -203,7 +200,7 @@ get-pre-commit() {
 }
 
 get-rebar() {
-    get-erlang ""
+    command -v erl || get-erlang ""
     _github "erlang" "rebar3" "" "${1:-}"
 }
 
