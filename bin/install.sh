@@ -114,10 +114,9 @@ get-emacs-wayland() {
 
 # install erlang
 get-erlang() {
-    local VSN="${1:-25}"
+    local VSN="${1:-26}"
 
     _apt_install \
-        autoconf \
         build-essential \
         ca-certificates \
         libncurses-dev \
@@ -135,13 +134,15 @@ get-erlang() {
     ./configure \
         --without-debugger \
         --without-eldap \
+        --without-erl_docgen \
         --without-et \
+        --without-ftp \
+        --without-hipe \
         --without-javac \
         --without-jinterface \
         --without-megaco \
         --without-observer \
         --without-odbc \
-        --without-snmp \
         --without-tftp \
         --without-wx \
         --without-dynamic-trace \
