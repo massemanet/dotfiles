@@ -178,15 +178,15 @@ get-gopass() {
 }
 
 get-kubectl() {
+    
     local KEYRING=/etc/apt/keyrings/kubernetes-archive-keyring.gpg
-    local APTKEY=https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    local APTKEY=https://dl.k8s.io/apt/doc/apt-key.gpg
     local REPO=https://apt.kubernetes.io/
     local LIST=/etc/apt/sources.list.d/kubernetes.list
     _apt_install ca-certificates curl &&
         sudo mkdir -p /etc/apt/keyrings &&
         sudo curl -fsSLo "$KEYRING" "$APTKEY" &&
         echo "deb [signed-by=$KEYRING] $REPO kubernetes-xenial main" | sudo tee "$LIST" &&
-        sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B53DC80D13EDEF05 &&
         _apt_install kubectl &&
         kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl-complete > /dev/null
 }
