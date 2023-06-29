@@ -9,6 +9,5 @@ GPG_TTY="$(tty)"
 >/dev/null command -v kubectl   || ~/bin/install.sh kubectl
 >/dev/null command -v aws       || ~/bin/install.sh awscli
 >/dev/null command -v aws-vault || ~/bin/install.sh aws-vault
->/dev/null command -v gopass    || ~/bin/install.sh gopass
 >/dev/null command -v pass      || ~/bin/install.sh pass
 >/dev/null command -v docker    || ~/bin/install.sh docker
