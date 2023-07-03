@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+_err() {
+    echo "${1:-}"
+    exit 2
+}
+
+_join_by() {
+    local IFS="$1"
+    shift
+    echo "$*"
+}
+
+_split_by() {
+    local IFS="$1"
+    shift
+    read -ra A <<< "$*"
+    echo "${A[@]}"
+}
+
+_filter() {
+    [[ ! "$1" =~ /opt/erl[0-9][0-9] ]] && echo "$1"
+}
+
+_remove() {
+    _join_by : $(for e in $(_split_by : "$1") ; do _filter "$e" ; done)
+}
+
+VSN="${1:-25}"
+[ -d "/opt/erl$VSN/bin" ] || _err "no such version: $VSN"
+echo "/opt/erl$VSN/bin:$(_remove "$PATH")"

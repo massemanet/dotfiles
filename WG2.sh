@@ -11,3 +11,5 @@ GPG_TTY="$(tty)"
 >/dev/null command -v aws-vault || ~/bin/install.sh aws-vault
 >/dev/null command -v pass      || ~/bin/install.sh pass
 >/dev/null command -v docker    || ~/bin/install.sh docker
+
+PATH="$(erlpath 25)"

@@ -126,12 +126,15 @@ get-erlang() {
         libssl-dev \
         lksctp-tools \
         make
+    sudo chmod a+w /opt
     [ -d ~/git/otp ] || git clone --depth=1 https://github.com/erlang/otp.git ~/git/otp
     cd ~/git/otp/
     git remote set-branches origin 'maint-*'
     git fetch -v
     git checkout "origin/maint-$VSN"
+    git clean -fdx
     ./configure \
+        --prefix="/opt/erl$VSN" \
         --without-debugger \
         --without-eldap \
         --without-erl_docgen \
@@ -148,8 +151,8 @@ get-erlang() {
         --without-dynamic-trace \
         --enable-sctp=lib \
         --disable-lock-counter
-    make -j4
-    sudo make install
+    make -j8
+    make -j8 install
 }
 
 get-et() {
@@ -178,7 +181,7 @@ get-gopass() {
 }
 
 get-kubectl() {
-    
+
     local KEYRING=/etc/apt/keyrings/kubernetes-archive-keyring.gpg
     local APTKEY=https://dl.k8s.io/apt/doc/apt-key.gpg
     local REPO=https://apt.kubernetes.io/
@@ -201,8 +204,19 @@ get-pre-commit() {
 }
 
 get-rebar() {
-    command -v erl || get-erlang ""
-    _github "erlang" "rebar3" "" "${1:-}"
+    local VSN="${1:-26}"
+    local ERLDIR=/opt/erl$VSN/bin
+
+    PATH="$ERLDIR:$PATH"
+    if [[ "$(command -v erl)" == "$ERLDIR/erl" ]]
+    then echo "Found erlang $VSN"
+    else get-erlang "${VSN}"
+    fi
+    [ -d ~/git/rebar3 ] || git -C ~/git clone http://github.com/erlang/rebar3
+    cd ~/git/rebar3
+    git pull
+    ./bootstrap
+    cp rebar3 "$(dirname "$(command -v erl)")"
 }
 
 get-rust() {
