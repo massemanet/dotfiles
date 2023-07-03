@@ -17,6 +17,8 @@ for P in $(_pds)
 do [ -d "$P" ] && PATH="$P:$PATH"
 done
 
+PATH="$(erlpath 25)"
+
 # keep the locale simple
 unset LC_CTYPE
 unset LC_ALL

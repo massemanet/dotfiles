@@ -127,14 +127,14 @@ get-erlang() {
         lksctp-tools \
         make
     sudo chmod a+w /opt
-    [ -d ~/git/otp ] || git clone --depth=1 https://github.com/erlang/otp.git ~/git/otp
-    cd ~/git/otp/
+    [ -d ~/git/otp ] || git -C ~/git clone --depth=1 https://github.com/erlang/otp
+    cd ~/git/otp
     git remote set-branches origin 'maint-*'
     git fetch -v
     git checkout "origin/maint-$VSN"
     git clean -fdx
     ./configure \
-        --prefix="/opt/erl$VSN" \
+        --prefix="/opt/erl${VSN}" \
         --without-debugger \
         --without-eldap \
         --without-erl_docgen \
@@ -189,9 +189,11 @@ get-kubectl() {
     _apt_install ca-certificates curl &&
         sudo mkdir -p /etc/apt/keyrings &&
         sudo curl -fsSLo "$KEYRING" "$APTKEY" &&
-        echo "deb [signed-by=$KEYRING] $REPO kubernetes-xenial main" | sudo tee "$LIST" &&
+        echo "deb [signed-by=$KEYRING] $REPO kubernetes-xenial main" | \
+            sudo tee "$LIST" &&
         _apt_install kubectl &&
-        kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl-complete > /dev/null
+        kubectl completion bash | \
+            sudo tee /etc/bash_completion.d/kubectl-complete > /dev/null
 }
 
 get-pass() {
