@@ -75,17 +75,22 @@ foo*
 /.xpra/
 /.xsession-errors
 /_ssh/
-/autosave.h2song
-/bin/rebar3
-/bin/docker-credential-*
-/bin/kubectl-*
 /bin/bazel*
+/bin/dialyzer
+/bin/docker-credential-*
+/bin/epmd
+/bin/erl
+/bin/erlc
+/bin/escript
+/bin/kubectl-*
+/bin/rebar3
 /bin/skopeo
 
 .DS_Store
 /Desktop/
 /Downloads/
 /Pictures/
+/autosave.h2song
 /pgadmin.log
 /snap/
 /stale_outputs_checked

@@ -153,6 +153,7 @@ get-erlang() {
         --disable-lock-counter
     make -j8
     make -j8 install
+    ~/bin/erlpath "$VSN"
 }
 
 get-et() {
@@ -219,6 +220,7 @@ get-rebar() {
     git pull
     ./bootstrap
     cp rebar3 "$(dirname "$(command -v erl)")"
+    ~/bin/erlpath "$VSN"
 }
 
 get-rust() {
