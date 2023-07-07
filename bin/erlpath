@@ -5,7 +5,11 @@ _err() {
     exit 2
 }
 
-VSN="${1:-25}"
+if [ -z "$1" ]
+then readlink ~/bin/erl | grep -Eo "/erl[0-9]+/" | grep -Eo "[0-9]+" ; exit 0
+else VSN="$1"
+fi
+
 [ -d "/opt/erl$VSN/bin" ] || _err "no such version: $VSN"
 
 FILES=("dialyzer" "epmd" "erl" "erlc" "escript" "rebar3")

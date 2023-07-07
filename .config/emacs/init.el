@@ -21,6 +21,7 @@
 (straight-use-package '(flycheck :fork "massemanet/flycheck"))
 (straight-use-package 'auctex)
 (straight-use-package 'auto-complete)
+(straight-use-package 'dockerfile-mode)
 (straight-use-package 'doom-modeline)
 (straight-use-package 'erlang)
 (straight-use-package 'flycheck-popup-tip)
@@ -53,44 +54,48 @@
 (require 'doom-modeline)
 (require 'ediff)
 (require 'magit)
-(setq flycheck-emacs-lisp-load-path 'inherit)
-(setq flycheck-protobuf-protoc-executable "protoc -I../../..")
+(require 'ispell)
 (require 'masserlang)
 
 ;; turn on good shit
-(show-paren-mode t)
-(transient-mark-mode t)
-(global-font-lock-mode t)
-(delete-selection-mode 1)
-(ido-mode t)
-(nyan-mode 1)
-(global-flycheck-mode)
-(flycheck-popup-tip-mode)
+(column-number-mode)
+(delete-selection-mode)
 (doom-modeline-mode)
+(flycheck-popup-tip-mode)
+(global-flycheck-mode)
+(global-font-lock-mode)
+(ido-mode)
+(nyan-mode)
+(show-paren-mode)
+(transient-mark-mode)
 
 (fset 'yes-or-no-p 'y-or-n-p)
 
 ;; turn off bad shit
-(if (featurep 'tool-bar)   (tool-bar-mode   -1))
-(if (featurep 'tooltip)    (tooltip-mode    -1))
-(if (featurep 'menu-bar)   (menu-bar-mode   -1))
+(if (featurep 'tool-bar) (tool-bar-mode -1))
+(if (featurep 'tooltip)  (tooltip-mode  -1))
+(if (featurep 'menu-bar) (menu-bar-mode -1))
 
 ;; configs
 (setq-default
  indent-tabs-mode               nil)
 
 (setq
- magit-define-global-key-bindings nil
- ediff-window-setup-function      'ediff-setup-windows-plain
- inhibit-startup-screen           t
- ring-bell-function               'ignore
- visible-bell                     nil
- default-input-method             "rfc1345"
- max-lisp-eval-depth              40000
- scroll-down-aggressively         0.1
- scroll-up-aggressively           0.1)
-
-(setq vc-handled-backends nil)
+ default-input-method                "rfc1345"
+ ediff-window-setup-function         'ediff-setup-windows-plain
+ flycheck-emacs-lisp-load-path       'inherit
+ flycheck-protobuf-protoc-executable "protoc -I../../.."
+ inhibit-startup-screen              t
+ ispell-program-name                 "aspell"
+ ispell-really-aspell                t
+ ispell-silently-savep               t
+ magit-define-global-key-bindings    nil
+ max-lisp-eval-depth                 40000
+ ring-bell-function                  'ignore
+ scroll-down-aggressively            0.1
+ scroll-up-aggressively              0.1
+ vc-handled-backends                 nil
+ visible-bell                        nil)
 
 ;; keybindings
 (global-unset-key (kbd "C-x C-z"))
@@ -150,17 +155,19 @@
 (global-set-key (kbd "C-x b")     'switch-to-buffer)
 (global-set-key (kbd "C-x d")     'dired)
 (global-set-key (kbd "C-x e")     'kmacro-end-and-call-macro)
-(global-set-key (kbd "C-x f")     'lsp-goto-type-definition)
+(global-set-key (kbd "C-x f")     'xref-find-definition)
 (global-set-key (kbd "C-x g")     'goto-line)
 (global-set-key (kbd "C-x h")     'mark-whole-buffer)
 (global-set-key (kbd "C-x i")     'insert-file)
 (global-set-key (kbd "C-x k")     'kill-buffer)
 (global-set-key (kbd "C-x l")     'count-lines-page)
+(global-set-key (kbd "C-x m")     'isearch-forward-regexp)
 (global-set-key (kbd "C-x n")     'forward-list)
 (global-set-key (kbd "C-x o")     'prev-window)
 (global-set-key (kbd "C-x p")     'backward-list)
 (global-set-key (kbd "C-x q")     'fill-paragraph)
 ;;              (kbd "C-x r")     Prefix(rectangle)
+(global-set-key (kbd "C-x s")     'just-one-space)
 (global-set-key (kbd "C-x t")     'transpose-words)
 (global-set-key (kbd "C-x u")     'undo)
 (global-set-key (kbd "C-x v")     'scroll-down)
@@ -183,6 +190,11 @@
  (lambda ()
    (set-exec-path)
    (load-theme 'tsdh-dark)))
+
+(add-hook
+ 'markdown-mode-hook
+ (lambda ()
+   (flyspell-mode)))
 
 (add-hook
  'ediff-mode-hook
