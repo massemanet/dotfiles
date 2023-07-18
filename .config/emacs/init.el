@@ -21,6 +21,7 @@
 (straight-use-package '(flycheck :fork "massemanet/flycheck"))
 (straight-use-package 'auctex)
 (straight-use-package 'auto-complete)
+(straight-use-package 'bazel)
 (straight-use-package 'dockerfile-mode)
 (straight-use-package 'doom-modeline)
 (straight-use-package 'erlang)

@@ -45,8 +45,8 @@ foo*
 /.lmmsrc.xml
 /.local/
 /.localbashrc
-/.mozilla/
 /.mlterm/
+/.mozilla/
 /.nmcli*
 /.nv/
 /.pam_environment
@@ -86,7 +86,6 @@ foo*
 /bin/rebar3
 /bin/skopeo
 
-.DS_Store
 /Desktop/
 /Downloads/
 /Pictures/
@@ -97,6 +96,5 @@ foo*
 /user_default.erl
 
 /git/
-/pet/
 /tmp/
 /VPN/
