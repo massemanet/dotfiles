@@ -5,9 +5,8 @@
 foo*
 *.beam
 
+# $HOME files
 /*.png
-/.ICEauthority
-/.IdeaIC*/
 /.aspell.*
 /.aws
 /.bash_history
@@ -23,15 +22,12 @@ foo*
 /.emacs.*
 /.erlang
 /.erlang.cookie
-/.face*
-/.fontconfig/
 /.gnupg
 /.gradle/
 /.ispell_*
 /.java/
 /.krew/
 /.kube
-/.lastpass/
 /.lesshst
 /.lmmsrc.xml
 /.local/
@@ -53,12 +49,11 @@ foo*
 /.ssh/
 /.sudo_as_admin_successful
 /.terraform.d/
-/.wg2/
 /.wget*
 /.wpa_cli_history
 /.xinputrc
-/.xpra/
-/.xsession-errors
+/VPN/
+/bazel-explain
 /bin/bazel*
 /bin/dialyzer
 /bin/docker-credential-*
@@ -69,11 +64,8 @@ foo*
 /bin/kubectl-*
 /bin/rebar3
 /bin/skopeo
-/pgadmin.log
-/snap/
-/stale_outputs_checked
-
-/user_default.erl
 /git/
+/pgadmin.log
+/stale_outputs_checked
 /tmp/
-/VPN/
+/user_default.erl
