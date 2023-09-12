@@ -26,10 +26,13 @@ _context() {
 }
 
 _show() {
-    local CTX
-    CTX="$(2>&1 kubectl config current-context)" &&
-        [[ "$CTX" != error:* ]] &&
-        grep -Eo '\-[a-z]*\.[a-z]*' <<<"$CTX" | tr -d "-"
+    local X Y
+    if X=$(kubectl config current-context 2>/dev/null)
+    then if Y="$(grep -Eo '\-[a-z]*\.[a-z]*' <<<"$X")"
+         then tr -d "-" <<<"$Y"
+         else echo "$X"
+         fi
+    fi
 }
 
 _pods() {
@@ -58,13 +61,16 @@ _set() {
     fi
 }
 
-[ -z "$(command -v kubectl)" ] && exit 1
+_set_ns() {
+    kubectl config set-context --current --namespace="$1"
+}
 
 case "${1:-}" in
     ""|show) _show ;;
     "pods")  _pods;;
-    "bash")  _bash "${2:-}";;
-    "erl")   _starlet "${2:-}";;
+    "bash")  [ -n "${2:-}" ] && _bash "$2";;
+    "erl")   [ -n "${2:-}" ] && _starlet "$2";;
     "set")   [ -n "${2:-}" ] && _set "$2";;
+    "ns")    [ -n "${2:-}" ] && _set_ns "$2";;
     *) _usage;;
 esac
