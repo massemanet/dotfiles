@@ -69,9 +69,11 @@ get-docker() {
 }
 
 get-docker-cred() {
+    local r
     local GH="https://github.com/docker/docker-credential-helpers/releases"
     local RE="download/v[0-9\\.]+/docker-credential-pass-v[0-9\\.]+-amd64.tar.gz"
     local GH=https://github.com/docker/docker-credential-helpers/releases/download/v0.7.0/docker-credential-pass-v0.7.0.linux-amd64
+
     r="$(curl -sSL "$GH" | grep -Eo "$RE" | grep "$VSN" | sort -Vu | tail -n1)"
     echo "found file $r"
     curl -sSL "$GH/$r" > /tmp/docker_cred_helper.tgz
@@ -86,6 +88,7 @@ get-docker-cred() {
 
 # init emacs
 get-emacs() {
+    local EMACSDIR
     command -v emacs || _apt_install emacs-nox aspell-en
     EMACSDIR="$(eval readlink -f "$(_elisp "(message user-emacs-directory)")")" &&
         rm -rf ~/.emacs.d &&
@@ -157,10 +160,11 @@ get-erlang() {
 }
 
 get-et() {
+    local URL="https://mistertea.github.io/debian-et"
+
     if grep -q Ubuntu /etc/lsb-release
     then sudo add-apt-repository ppa:jgmath2000/et
-    else URL="https://mistertea.github.io/debian-et"
-         echo "deb $URL/debian-source/ bullseye main" | sudo tee /etc/apt/sources.list.d/et.list
+    else echo "deb $URL/debian-source/ bullseye main" | sudo tee /etc/apt/sources.list.d/et.list
          curl -sS "$URL/et.gpg" | sudo apt-key add -
     fi
     _apt_install et
@@ -182,11 +186,11 @@ get-gopass() {
 }
 
 get-kubectl() {
-
     local KEYRING=/etc/apt/keyrings/kubernetes-archive-keyring.gpg
     local APTKEY=https://dl.k8s.io/apt/doc/apt-key.gpg
     local REPO=https://apt.kubernetes.io/
     local LIST=/etc/apt/sources.list.d/kubernetes.list
+
     _apt_install ca-certificates curl &&
         sudo mkdir -p /etc/apt/keyrings &&
         sudo curl -fsSLo "$KEYRING" "$APTKEY" &&
@@ -249,7 +253,5 @@ get-tshark() {
 
 [ -z "${1:-}" ] && _usage
 sudo true
-TRG="$1"
-VSN="${2:-}"
-echo "## $TRG:$VSN ##################################################################"
-"get-$TRG" "$VSN"
+echo "## $1:${2:-} ##################################################################"
+"get-$1" "${2:-}"
