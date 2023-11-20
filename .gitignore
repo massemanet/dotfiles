@@ -52,6 +52,7 @@ foo*
 /.terraform.d/
 /.wget*
 /.wpa_cli_history
+/.wrk.sh
 /.xinputrc
 /VPN/
 /bazel-explain

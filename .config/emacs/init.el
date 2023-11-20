@@ -23,7 +23,6 @@
 (straight-use-package 'auto-complete)
 (straight-use-package 'bazel)
 (straight-use-package 'dockerfile-mode)
-(straight-use-package 'doom-modeline)
 (straight-use-package 'erlang)
 (straight-use-package 'flycheck-popup-tip)
 (straight-use-package 'json-mode)
@@ -39,6 +38,7 @@
 (straight-use-package 'nyan-mode)
 (straight-use-package 'protobuf-mode)
 (straight-use-package 'rainbow-delimiters)
+(straight-use-package 'smart-mode-line)
 (straight-use-package 'string-inflection)
 (straight-use-package 'web-mode)
 (straight-use-package 'yaml-mode)
@@ -52,7 +52,6 @@
 (require 'nyan-mode)
 (require 'flycheck)
 (require 'flycheck-popup-tip)
-(require 'doom-modeline)
 (require 'ediff)
 (require 'magit)
 (require 'ispell)
@@ -61,7 +60,6 @@
 ;; turn on good shit
 (column-number-mode)
 (delete-selection-mode)
-(doom-modeline-mode)
 (flycheck-popup-tip-mode)
 (global-flycheck-mode)
 (global-font-lock-mode)
@@ -95,7 +93,6 @@
  ring-bell-function                  'ignore
  scroll-down-aggressively            0.1
  scroll-up-aggressively              0.1
- vc-handled-backends                 nil
  visible-bell                        nil)
 
 ;; keybindings
@@ -212,7 +209,7 @@
   "Set up Emacs' variable `exec-path' and PATH environment variable."
   (interactive)
   (let* ((shell-path (shell-command-to-string "$SHELL --login -c 'echo $PATH'"))
-	 (path-from-shell (replace-regexp-in-string "[ \t\n]*$" "" shell-path)))
+         (path-from-shell (replace-regexp-in-string "[ \t\n]*$" "" shell-path)))
     (setenv "PATH" path-from-shell)
     (setq exec-path (split-string path-from-shell path-separator))))
 
@@ -232,7 +229,10 @@ Repeated invocations toggle between the two most recently open buffers."
   (interactive)
   (indent-region (point-min) (point-max))
   (untabify (point-min) (point-max))
-  (whitespace-cleanup-region (point-min) (point-max)))
+  (whitespace-cleanup-region (point-min) (point-max))
+  (font-lock-ensure))
+
+(set-face-foreground font-lock-type-face "yellow green")
 
 (defun prev-window ()
   "Select previous window."

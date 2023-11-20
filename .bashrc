@@ -56,6 +56,9 @@ then export EDITOR="emacsclient -nw -c --alternate-editor="
 else export EDITOR=nano
 fi
 
+# shellcheck disable=SC1091
+[ -f "$HOME/.wrk.sh" ] && source "$HOME/.wrk.sh"
+
 e() {
     case "${1:-}" in
         "") $EDITOR ;;
