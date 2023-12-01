@@ -17,6 +17,10 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
+(setq custom-safe-themes
+      '("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa"
+        default))
+
 ;; select packages
 (straight-use-package '(flycheck :fork "massemanet/flycheck"))
 (straight-use-package 'auctex)
@@ -24,10 +28,8 @@
 (straight-use-package 'bazel)
 (straight-use-package 'dockerfile-mode)
 (straight-use-package 'erlang)
+(straight-use-package 'expand-region)
 (straight-use-package 'flycheck-popup-tip)
-(straight-use-package 'json-mode)
-(straight-use-package 'json-reformat)
-(straight-use-package 'json-snatcher)
 (straight-use-package 'macrostep)
 (straight-use-package 'magit)
 (straight-use-package 'magit-gitflow)
@@ -35,6 +37,7 @@
 (straight-use-package 'magit-todos)
 (straight-use-package 'markdown-mode)
 (straight-use-package 'markdown-toc)
+(straight-use-package 'multiple-cursors)
 (straight-use-package 'nyan-mode)
 (straight-use-package 'protobuf-mode)
 (straight-use-package 'rainbow-delimiters)
@@ -48,14 +51,15 @@
 (add-to-list 'load-path (concat user-emacs-directory "masserlang"))
 
 ;; needed to make flycheck happy
-(require 'straight)
-(require 'nyan-mode)
+(require 'ediff)
 (require 'flycheck)
 (require 'flycheck-popup-tip)
-(require 'ediff)
-(require 'magit)
 (require 'ispell)
+(require 'magit)
 (require 'masserlang)
+(require 'nyan-mode)
+(require 'smart-mode-line)
+(require 'straight)
 
 ;; turn on good shit
 (column-number-mode)
@@ -66,6 +70,7 @@
 (ido-mode)
 (nyan-mode)
 (show-paren-mode)
+(sml/setup)
 (transient-mark-mode)
 
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -76,8 +81,9 @@
 (if (featurep 'menu-bar) (menu-bar-mode -1))
 
 ;; configs
-(setq-default
- indent-tabs-mode               nil)
+(set-face-foreground font-lock-type-face "yellow green")
+
+(setq-default indent-tabs-mode nil)
 
 (setq
  default-input-method                "rfc1345"
@@ -178,10 +184,6 @@
   (define-key map (kbd "C-n")   'next-history-element)
   (define-key map (kbd "C-p")   'previous-history-element))
 
-(let ((map minibuffer-local-map))
-  (define-key map (kbd "C-n")   'next-history-element)
-  (define-key map (kbd "C-p")   'previous-history-element))
-
 ;; hooks
 (add-hook
  'after-init-hook
@@ -225,12 +227,14 @@ Repeated invocations toggle between the two most recently open buffers."
   (switch-to-buffer (other-buffer (current-buffer) 1)))
 
 (defun fixup-buffer ()
-  "Untabify entire buffer."
+  "Fixup entire buffer."
   (interactive)
+;;  (font-lock-ensure)
+;;  (font-lock-fontify-buffer)
+  (font-lock-flush)
   (indent-region (point-min) (point-max))
   (untabify (point-min) (point-max))
-  (whitespace-cleanup-region (point-min) (point-max))
-  (font-lock-ensure))
+  (whitespace-cleanup-region (point-min) (point-max)))
 
 (set-face-foreground font-lock-type-face "yellow green")
 

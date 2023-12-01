@@ -2,38 +2,21 @@
 
 set -euo pipefail
 
-_usage() {
-    local PROG; PROG=$(basename "$0")
-    cat <<HERE
-$PROG PROFILE SERVICE CMD
-$PROG --list
-
-Runs an aws command in a profile, or list profiles.
-
-Examples:
- $PROG prod s3 ls
-
- $PROG --list
-HERE
-    exit 0
-}
-
 _err() {
     echo "${1:-}"
-    exit 1
+    exit 44
 }
 
-export AWS_VAULT_BACKEND=pass
-export AWS_VAULT_PASS_PREFIX=aws-vault
-export GPG_TTY
-GPG_TTY="$(tty)"
+[ -n "${AVS:-}" ] || _err "No \$AVS."
 
-[ -z "${1:-}" ] && _usage
+mapfile -td":" AVS <<<"$AVS"
+echo "${AVS[@]}"
 
-[[ "$1" = "--list" ]] && aws-vault list && exit 0
-
-[ -z "${2:-}" ] && _usage
-[ -z "${3:-}" ] && _usage
-C="$1"
-shift
-aws-vault exec "$C" aws "$@"
+if [ -z "${AVS[3]:-}" ]
+then _err "Set \$AVS"
+else ID1="${AVS[0]}"
+     ID2="${AVS[1]}"
+     JUMP="${AVS[2]}"
+     MACHINE="${AVS[3]}"
+     ssh -i "$ID1" -i "$ID2" -J "$JUMP" "$MACHINE"
+fi

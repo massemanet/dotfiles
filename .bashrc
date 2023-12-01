@@ -42,6 +42,14 @@ PS1+='\[\e[35m\]($GIT_PS1)'
 PS1+='\[\e[32m\]${LAST_EXIT:+\[\e[31m\]($LAST_EXIT)}$'
 PS1+='\[\e[0m\] '
 
+# emacs
+if >/dev/null command -v emacs
+then export EDITOR="emacsclient -nw -c --alternate-editor="
+else export EDITOR=nano
+fi
+
+[ -f "$HOME/.wrk.sh" ] && . "$HOME/.wrk.sh"
+
 # aliases
 dir()  { ls -AlFh --color "$@"; }
 dirt() { dir -rt "$@"; }
@@ -49,12 +57,6 @@ dird() { dir -d "$@"; }
 rea()  { history | grep -E "${@:-}"; }
 c()    { cat "$@"; }
 m()    { less "$@"; }
-
-# emacs
-if >/dev/null command -v emacs
-then export EDITOR="emacsclient -nw -c --alternate-editor="
-else export EDITOR=nano
-fi
 
 e() {
     case "${1:-}" in
