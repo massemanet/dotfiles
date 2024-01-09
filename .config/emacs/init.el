@@ -47,7 +47,6 @@
 (straight-use-package 'yaml-mode)
 
 ;; my paths
-(add-to-list 'load-path "~/git/acer")
 (add-to-list 'load-path (concat user-emacs-directory "masserlang"))
 
 ;; needed to make flycheck happy
@@ -63,33 +62,35 @@
 
 ;; turn on good shit
 (column-number-mode)
-(delete-selection-mode)
+(delete-selection-mode 1)
 (flycheck-popup-tip-mode)
 (global-flycheck-mode)
 (global-font-lock-mode)
 (ido-mode)
 (nyan-mode)
 (show-paren-mode)
-(sml/setup)
 (transient-mark-mode)
-
-(fset 'yes-or-no-p 'y-or-n-p)
 
 ;; turn off bad shit
 (if (featurep 'tool-bar) (tool-bar-mode -1))
 (if (featurep 'tooltip)  (tooltip-mode  -1))
 (if (featurep 'menu-bar) (menu-bar-mode -1))
 
-;; configs
+;; faces etc
+;;(message "%s" (face-all-attributes 'font-lock-type-face))
 (set-face-foreground font-lock-type-face "yellow green")
+(set-face-attribute 'mode-line nil :height 190)
+(sml/apply-theme 'dark)
+(sml/setup)
 
+;; configs
+(fset 'yes-or-no-p 'y-or-n-p)
 (setq-default indent-tabs-mode nil)
 
 (setq
  default-input-method                "rfc1345"
  ediff-window-setup-function         'ediff-setup-windows-plain
  flycheck-emacs-lisp-load-path       'inherit
- flycheck-protobuf-protoc-executable "protoc -I../../.."
  inhibit-startup-screen              t
  ispell-program-name                 "aspell"
  ispell-really-aspell                t
@@ -105,35 +106,18 @@
 (global-unset-key (kbd "C-x C-z"))
 
 ;;; immediates. be frugal with these.
-(global-set-key (kbd "C-\\")    'server-edit)
-(global-set-key (kbd "C-j")     'scroll-down)
-(global-set-key (kbd "C-z")     'undo) ; be like a mac
-(global-set-key (kbd "M-1")     'insert-tilde)
-(global-set-key (kbd "M-z")     'undo) ; if screen eats C-z
+(global-set-key (kbd "C-/")  'ispell-word)
+(global-set-key (kbd "C-\"") 'mc/mark-all-like-this)
+(global-set-key (kbd "C-'")  'mc/hide-unmatched-lines-mode)
+(global-set-key (kbd "C->")  'er/expand-region)
+(global-set-key (kbd "C-<")  'er/contract-region)
+(global-set-key (kbd "C-j")  'scroll-down)
+(global-set-key (kbd "C-z")  'undo) ; be like a mac
+(global-set-key (kbd "M-z")  'undo) ; if screen eats C-z
 
 ;;; C-x for user specified.
 (global-set-key (kbd "C-S-v")     'scroll-down-command)
 
-(global-set-key (kbd "C-x C-SPC") 'pop-global-mark)
-(global-set-key (kbd "C-x C-b")   'ibuffer-list-buffers)
-(global-set-key (kbd "C-x C-c")   'save-buffers-kill-terminal)
-(global-set-key (kbd "C-x C-e")   'eval-last-sexp)
-(global-set-key (kbd "C-x C-f")   'find-file)
-(global-set-key (kbd "C-x TAB")   'fixup-buffer)
-;;              (kbd "C-x C-k")   PREFIX(kmacro)
-;;              (kbd "C-x RET")   PREFIX(coding system)
-(global-set-key (kbd "C-x C-q")   'query-replace)
-(global-set-key (kbd "C-x C-r")   'revert-buffer)
-(global-set-key (kbd "C-x C-s")   'save-buffer)
-(global-set-key (kbd "C-x C-t")   'transpose-lines)
-(global-set-key (kbd "C-x C-u")   'string-inflection-all-cycle)
-(global-set-key (kbd "C-x C-v")   'find-alternate-file)
-(global-set-key (kbd "C-x C-w")   'write-file)
-(global-set-key (kbd "C-x C-x")   'execute-extended-command)
-(global-set-key (kbd "C-x ESC")   'insert-tilde)
-(global-set-key (kbd "C-x C-[")   'previous-error)
-(global-set-key (kbd "C-x C-]")   'next-error)
-(global-set-key (kbd "C-x SPC")   'rectangle-mark-mode)
 (global-set-key (kbd "C-x #")     'server-edit)
 (global-set-key (kbd "C-x '")     'expand-abbrev)
 (global-set-key (kbd "C-x (")     'kmacro-start-macro)
@@ -152,7 +136,27 @@
 ;;              (kbd "C-x 6")     PREFIX(2 column)
 ;;              (kbd "C-x 8")     PREFIX(unicode)
 (global-set-key (kbd "C-x ;")     'eval-expression)
+(global-set-key (kbd "C-x C-SPC") 'pop-global-mark)
+(global-set-key (kbd "C-x C-[")   'previous-error)
+(global-set-key (kbd "C-x C-]")   'next-error)
+(global-set-key (kbd "C-x C-b")   'ibuffer-list-buffers)
+(global-set-key (kbd "C-x C-c")   'save-buffers-kill-terminal)
+(global-set-key (kbd "C-x C-e")   'eval-last-sexp)
+(global-set-key (kbd "C-x C-f")   'find-file)
+;;              (kbd "C-x C-k")   PREFIX(kmacro)
+(global-set-key (kbd "C-x C-q")   'query-replace)
+(global-set-key (kbd "C-x C-r")   'revert-buffer)
+(global-set-key (kbd "C-x C-s")   'save-buffer)
+(global-set-key (kbd "C-x C-t")   'transpose-lines)
+(global-set-key (kbd "C-x C-u")   'string-inflection-all-cycle)
+(global-set-key (kbd "C-x C-v")   'find-alternate-file)
+(global-set-key (kbd "C-x C-w")   'write-file)
+(global-set-key (kbd "C-x C-x")   'execute-extended-command)
+(global-set-key (kbd "C-x ESC")   'insert-tilde)
 (global-set-key (kbd "C-x O")     'switch-to-previous-buffer)
+;;              (kbd "C-x RET")   PREFIX(coding system)
+(global-set-key (kbd "C-x SPC")   'rectangle-mark-mode)
+(global-set-key (kbd "C-x TAB")   'fixup-buffer)
 (global-set-key (kbd "C-x [")     'flycheck-previous-error)
 (global-set-key (kbd "C-x ]")     'flycheck-next-error)
 (global-set-key (kbd "C-x a")     'align-regexp)
@@ -178,11 +182,10 @@
 (global-set-key (kbd "C-x w")     'kill-ring-save)
 (global-set-key (kbd "C-x x")     'switch-mark-and-point)
 (global-set-key (kbd "C-x y")     'yank-pop)
-(global-set-key (kbd "C-x C-SPC") 'pop-global-mark)
 
 (let ((map minibuffer-local-map))
-  (define-key map (kbd "C-n")   'next-history-element)
-  (define-key map (kbd "C-p")   'previous-history-element))
+  (define-key map (kbd "C-n") 'next-history-element)
+  (define-key map (kbd "C-p") 'previous-history-element))
 
 ;; hooks
 (add-hook
@@ -227,16 +230,14 @@ Repeated invocations toggle between the two most recently open buffers."
   (switch-to-buffer (other-buffer (current-buffer) 1)))
 
 (defun fixup-buffer ()
-  "Fixup entire buffer."
+  "Fixup buffer."
   (interactive)
-;;  (font-lock-ensure)
-;;  (font-lock-fontify-buffer)
+  ;;  (font-lock-ensure)
+  ;;  (font-lock-fontify-buffer)
   (font-lock-flush)
   (indent-region (point-min) (point-max))
   (untabify (point-min) (point-max))
   (whitespace-cleanup-region (point-min) (point-max)))
-
-(set-face-foreground font-lock-type-face "yellow green")
 
 (defun prev-window ()
   "Select previous window."

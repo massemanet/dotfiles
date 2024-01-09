@@ -26,18 +26,35 @@ _github () {
     local ORG="$1"
     local PROJ="$2"
     local BIN="$3"
-    local VSN="${4:-v?[0-9\.]+}"
+    local VSN="${4:-v?[0-9\.]}"
     local TARG="${5:-/usr/local/bin}"
-
     local RE="$ORG/$PROJ/releases/tag/$VSN"
     local DLPAGE="https://github.com/$ORG/$PROJ"
-    VSN="$(curl -sL "$DLPAGE"/tags | grep -Eo "$RE" | grep -Eo "$VSN" | sort -Vru | head -n1)"
-    [ -z "$VSN" ] && _err "no file at $DLPAGE."
-    echo "found file: $VSN"
-    curl -sL "$DLPAGE/releases/download/$VSN/$PROJ$BIN" -o "/tmp/$PROJ"
-    sudo install "/tmp/$PROJ" "$TARG"
-    echo "installed $PROJ::$VSN in $TARG"
-}
+
+    if VSN="$(curl -sL "$DLPAGE"/tags | grep -Eo "$RE" | grep -Eo "$VSN" | sort -Vru | head -n1)"
+    then echo "found file: $RE"
+    else _err "no file at $DLPAGE."
+    fi
+    if curl -sL "$DLPAGE/releases/download/$VSN/$BIN" -o "$DEST"
+    then echo "Downloaded to $DEST"
+    else _err "Download fail: $DLPAGE/releases/download/$VSN/$BIN"
+    fi
+    case "$(file "$DEST")" in
+        "$DEST: POSIX tar"*) _err "tar file: $(tar -tzf "$DEST")";;
+        "$DEST: ELF"*) chmod x "$DEST" && sudo cp "$DEST" "$TARG";;
+        "$DEST: Zip archive"*)
+            case "$(unzip -p "$DEST" | file -)" in
+                "/dev/stdin: ELF"*) cd "$TARG" && sudo unzip "$DEST";;
+                *) _err "zip file: $(unzip -l "$DEST")"
+            esac;;
+        "$DEST: gzip compressed"*)
+            case "$(zcat "$DEST" | file -)" in
+                "/dev/stdin: ELF"*) cd "$TARG" && sudo gunzip "$DEST";;
+                "/dev/stdin: POSIX tar"*) _err "tar file: $(tar -tzf "$DEST")";;
+                *) _err "gzip file: $(gunzip -l "$DEST")"
+            esac;;
+    esac
+ }
 
 #######################################################
 
@@ -47,15 +64,9 @@ get-awscli() {
     echo "awscli."
 }
 
-get-aws-vault() {
-    _github "99designs" "aws-vault" "-linux-amd64" "${1:-}"
-    curl -fsSLo https://raw.githubusercontent.com/99designs/aws-vault/v6.6.2/contrib/completions/bash/aws-vault.bash /tmp/aws-vault-complete &&
-        sudo cp /tmp/aws-vault-complete /etc/bash_completion.d/
-}
-
 get-bazelisk() {
     local COMPLETER=~/git/loltel/script/bazel-complete.bash
-    _github "bazelbuild" "bazelisk" "-linux-amd64" "${1:-}"
+    _github "bazelbuild" "bazelisk" "bazelisk-linux-amd64" "${1:-}"
     [ -f "$COMPLETER" ] && sudo ln -s "$COMPLETER" /etc/bash_completion.d/
     rm -f ~/bin/bazel && ln -s /usr/local/bin/bazelisk ~/bin/bazel
     cat > ~/.bazelrc <<<"build --disk_cache=/tmp/bazel"
@@ -66,24 +77,6 @@ get-docker() {
     _apt_install docker.io docker-compose &&
         sudo adduser "$AUSER" docker
     echo "installed docker"
-}
-
-get-docker-cred() {
-    local r
-    local GH="https://github.com/docker/docker-credential-helpers/releases"
-    local RE="download/v[0-9\\.]+/docker-credential-pass-v[0-9\\.]+-amd64.tar.gz"
-    local GH=https://github.com/docker/docker-credential-helpers/releases/download/v0.7.0/docker-credential-pass-v0.7.0.linux-amd64
-
-    r="$(curl -sSL "$GH" | grep -Eo "$RE" | grep "$VSN" | sort -Vu | tail -n1)"
-    echo "found file $r"
-    curl -sSL "$GH/$r" > /tmp/docker_cred_helper.tgz
-    rm -rf ~/pet/docker
-    mkdir -p ~/pet/docker
-    mkdir -p ~/.docker
-    tar -C ~/pet/docker -xzf /tmp/docker_cred_helper.tgz
-    chmod +x ~/pet/docker/docker-credential-pass
-    echo '{"credsStore": "pass"}' > ~/pet/docker/config.json
-    (cd ~/bin; ln -s ../pet/docker/docker-credential-pass . ; cd ~/.docker ; ln -s ../pet/docker/config.json .)
 }
 
 # init emacs
@@ -104,17 +97,6 @@ get-emacs() {
         echo "installed emacs"
 }
 
-# emacs for wayland
-get-emacs-wayland() {
-    cd ~/git
-    [ -d emacs ] || git clone --branch feature/pgtk --single-branch git://git.sv.gnu.org/emacs.git
-    cd emacs/
-    git sync
-    ./autogen.sh
-    ./configure --with-pgtk --with-json --with-native-compilation --with-file-notification=inotify
-    sudo make install
-}
-
 # install erlang
 get-erlang() {
     local VSN="${1:-26}"
@@ -129,7 +111,7 @@ get-erlang() {
         libssl-dev \
         lksctp-tools \
         make
-    sudo chmod a+w /opt
+    sudo chmod aw /opt
     [ -d ~/git/otp ] || git -C ~/git clone --depth=1 https://github.com/erlang/otp
     cd ~/git/otp
     git remote set-branches origin 'maint-*'
@@ -170,19 +152,10 @@ get-et() {
     _apt_install et
 }
 
-get-go() {
-    local DL="golang.org/dl"
-    local RE="go[0-9]+\.[0-9]+\.[0-9]+\.linux-amd64\.tar\.gz"
-    local TGZ
-
-    TGZ="$(curl -sSL "$DL" | grep -Eo "$RE" | sort -rV | head -n1)"
-    echo "found $TGZ"
-    curl -sSL "$DL/$TGZ" > /tmp/$$.tgz
-    sudo tar -C /usr/local -xzf /tmp/$$.tgz
-}
-
-get-gopass() {
-    _apt_install gopass
+get-jtd() {
+    _github "jsontypedef" "json-typedef-validate" "x86_64-unknown-linux-gnu.zip" "${1:-}"
+    _github "jsontypedef" "json-typedef-codegen" "x86_64-unknown-linux-gnu.zip" "${1:-}"
+    _github "jsontypedef" "json-typedef-infer" "x86_64-unknown-linux-gnu.zip" "${1:-}"
 }
 
 get-kubectl() {
@@ -199,10 +172,6 @@ get-kubectl() {
         _apt_install kubectl &&
         kubectl completion bash | \
             sudo tee /etc/bash_completion.d/kubectl-complete > /dev/null
-}
-
-get-pass() {
-    _apt_install pass
 }
 
 get-pre-commit() {
@@ -229,7 +198,7 @@ get-rebar() {
 
 get-rust() {
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > /tmp/rust.sh
-    chmod +x /tmp/rust.sh
+    chmod x /tmp/rust.sh
     /tmp/rust.sh --no-modify-path -y -q
 }
 
