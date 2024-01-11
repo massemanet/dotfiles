@@ -108,18 +108,18 @@
 ;;; immediates. be frugal with these.
 (global-set-key (kbd "C-/")  'ispell-word)
 (global-set-key (kbd "C-\"") 'mc/mark-all-like-this)
-(global-set-key (kbd "C-'")  'mc/hide-unmatched-lines-mode)
+(global-set-key (kbd "C-'")  'mc-hide-unmatched-lines-mode)
 (global-set-key (kbd "C->")  'er/expand-region)
 (global-set-key (kbd "C-<")  'er/contract-region)
 (global-set-key (kbd "C-j")  'scroll-down)
 (global-set-key (kbd "C-z")  'undo) ; be like a mac
 (global-set-key (kbd "M-z")  'undo) ; if screen eats C-z
 
-;;; C-x for user specified.
 (global-set-key (kbd "C-S-v")     'scroll-down-command)
 
+;;; C-x for user specified.
 (global-set-key (kbd "C-x #")     'server-edit)
-(global-set-key (kbd "C-x '")     'expand-abbrev)
+(global-set-key (kbd "C-x '")  'mc-hide-unmatched-lines-mode)
 (global-set-key (kbd "C-x (")     'kmacro-start-macro)
 (global-set-key (kbd "C-x )")     'kmacro-end-macro)
 (global-set-key (kbd "C-x *")     'calc-dispatch)
@@ -136,6 +136,9 @@
 ;;              (kbd "C-x 6")     PREFIX(2 column)
 ;;              (kbd "C-x 8")     PREFIX(unicode)
 (global-set-key (kbd "C-x ;")     'eval-expression)
+(global-set-key (kbd "C-x <")  'er/contract-region)
+(global-set-key (kbd "C-x >")  'er/expand-region)
+(global-set-key (kbd "C-x ?")  'mc/mark-next-like-this)
 (global-set-key (kbd "C-x C-SPC") 'pop-global-mark)
 (global-set-key (kbd "C-x C-[")   'previous-error)
 (global-set-key (kbd "C-x C-]")   'next-error)
@@ -158,6 +161,7 @@
 (global-set-key (kbd "C-x SPC")   'rectangle-mark-mode)
 (global-set-key (kbd "C-x TAB")   'fixup-buffer)
 (global-set-key (kbd "C-x [")     'flycheck-previous-error)
+(global-set-key (kbd "C-x \"") 'mc/mark-all-like-this)
 (global-set-key (kbd "C-x ]")     'flycheck-next-error)
 (global-set-key (kbd "C-x a")     'align-regexp)
 (global-set-key (kbd "C-x b")     'switch-to-buffer)
