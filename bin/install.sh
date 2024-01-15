@@ -41,7 +41,7 @@ _github () {
     fi
     case "$(file "$DEST")" in
         "$DEST: POSIX tar"*) _err "tar file: $(tar -tzf "$DEST")";;
-        "$DEST: ELF"*) chmod x "$DEST" && sudo cp "$DEST" "$TARG";;
+        "$DEST: ELF"*) chmod +x "$DEST" && sudo cp "$DEST" "$TARG";;
         "$DEST: Zip archive"*)
             case "$(unzip -p "$DEST" | file -)" in
                 "/dev/stdin: ELF"*) cd "$TARG" && sudo unzip "$DEST";;
@@ -198,7 +198,7 @@ get-rebar() {
 
 get-rust() {
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > /tmp/rust.sh
-    chmod x /tmp/rust.sh
+    chmod +x /tmp/rust.sh
     /tmp/rust.sh --no-modify-path -y -q
 }
 

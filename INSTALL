@@ -87,7 +87,7 @@ sudo apt-get update &&
          jq \
          lksctp-tools lsof \
          make \
-         ncdu netcat-traditional \
+         ncdu netcat-traditional nodejs \
          openssh-server \
          python-is-python3 \
          shellcheck socat strace sysstat systemd-timesyncd \
